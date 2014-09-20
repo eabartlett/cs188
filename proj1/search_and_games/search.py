@@ -97,8 +97,26 @@ def iterativeDeepeningSearch(problem):
 
     Begin with a depth of 1 and increment depth by 1 at every step.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    i = 1
+    while True:
+        print i
+        possibleSolution = limitedDepthFirstSearch(problem, depth = i)
+        if possibleSolution:
+            return possibleSolution
+        i += 1
+
+def limitedDepthFirstSearch(problem, visited, expanded, successor = None, depth = 0):
+    state = successor[0] if successor else problem.getStartState()
+    if depth == 0:
+        return [] if problem.isGoalState(state) else None
+
+    frontier = sorted(problem.getSuccessors(state), key = lambda s: s[0])
+    for s in frontier:
+        isGoal = limitedDepthFirstSearch(problem = problem, successor = s, depth = depth - 1)
+        if isGoal != None:
+            return [s[1]] + isGoal
+    return None
+
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
