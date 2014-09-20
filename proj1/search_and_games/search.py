@@ -99,29 +99,26 @@ def iterativeDeepeningSearch(problem):
     """
     i = 1
     while True:
-        possibleSolution = limitedDepthFirstSearch(problem, set(), problem.getStartState(), i)
+        possibleSolution = limitedDepthFirstSearch(problem, set(), set([problem.getStartState()]), problem.getStartState(), i)
         if possibleSolution:
-            print possibleSolution
             return possibleSolution
         i += 1
 
-def limitedDepthFirstSearch(problem, expanded, state, depth):
+def limitedDepthFirstSearch(problem, expanded, visited, state, depth):
     if depth > 0:
-        expanded.add(state)
         if problem.isGoalState(state):
             return []
         frontier = util.Stack()
         for s in problem.getSuccessors(state):
-            if not s[0] in expanded:
+            if not s[0] in expanded and s[0] not in visited:
                 frontier.push(s)
+                visited.add(s[0])
+        expanded.add(state)
         while not frontier.isEmpty():
             node = frontier.pop()
-            solution = limitedDepthFirstSearch(problem, expanded, node[0], depth - 1)
+            solution = limitedDepthFirstSearch(problem, expanded, visited, node[0], depth - 1)
             if solution != None:
                 return [node[1]] + solution
-            else:
-                if node[0] in expanded:
-                    expanded.remove(node[0])
     else :
         return [] if problem.isGoalState(state) else None
     return None
