@@ -144,8 +144,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             frontier.push((s_state, moves + [s_move], s_h), priority = s_h) 
     return []
 
-
-
 # Abbreviations
 bfs = breadthFirstSearch
 astar = aStarSearch
