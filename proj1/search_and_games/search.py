@@ -129,7 +129,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     frontier.push((problem.getStartState(), [], 0), priority = heuristic(problem.getStartState(), problem = problem))
     expanded = set()
     while not frontier.isEmpty():
-        # print "expanded: ", expanded, "Frontier: ", frontier.heap 
         (state, moves, score) = frontier.pop()
         if state in expanded:
             continue
@@ -142,7 +141,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             s_state, s_move, s_cost = successor
             s_h = dist + s_cost + heuristic(s_state, problem = problem)
             frontier.push((s_state, moves + [s_move], s_h), priority = s_h)
-    # print "Ran out of frontier"
     return []
 
 # Abbreviations
