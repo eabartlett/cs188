@@ -126,8 +126,25 @@ def limitedDepthFirstSearch(problem, expanded, visited, state, depth):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+    frontier.push((problem.getStartState(), [], 0), priority = heuristic(problem.getStartState(), problem = problem))
+    expanded = set()
+    while not frontier.isEmpty():
+        (state, moves, score) = frontier.pop()
+        if state in expanded:
+            continue
+        if problem.isGoalState(state):
+            return moves
+        expanded.add(state)
+        dist = score - heuristic(state, problem = problem)
+        successors = [ s for s in problem.getSuccessors(state) if not s[0] in expanded ]
+        for successor in successors:
+            s_state, s_move, s_cost = successor
+            s_h = dist + s_cost + heuristic(s_state, problem = problem)
+            frontier.push((s_state, moves + [s_move], s_h), priority = s_h) 
+    return []
+
+
 
 # Abbreviations
 bfs = breadthFirstSearch
