@@ -121,7 +121,6 @@ def limitedDepthFirstSearch(problem, expanded, visited, state, depth):
                 return [node[1]] + solution
     else :
         return [] if problem.isGoalState(state) else None
-    return None
 
 
 def aStarSearch(problem, heuristic=nullHeuristic):
@@ -134,6 +133,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         if state in expanded:
             continue
         if problem.isGoalState(state):
+            print "Found goal state"
             return moves
         expanded.add(state)
         dist = score - heuristic(state, problem = problem)
