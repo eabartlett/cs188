@@ -293,7 +293,7 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         for corner in state[0]:
-            if not corner:
+            if corner <= 0:
                 return False
         return True
 
@@ -316,6 +316,7 @@ class CornersProblem(search.SearchProblem):
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
                 corners = self.getCorners(corners = state[0], position = (nextx, nexty))
+                print corners
                 s = (corners, (nextx, nexty))
                 cost = self.getCostOfActions([action])
                 successors.append((s, action, cost))
