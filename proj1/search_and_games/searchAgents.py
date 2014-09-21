@@ -265,16 +265,18 @@ class CornersProblem(search.SearchProblem):
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
+        self.top = top
+        self.right = right
 
     def getCorners(self, corners, position):
-        if self.startingPosition in self.corners:
+        if position in self.corners:
             if position == (1,1):
                 return (True, corners[1], corners[2], corners[3])
-            if position == (1,top):
+            if position == (1,self.top):
                 return (corners[0], True, corners[2], corners[3])
-            if position == (right, 1):
+            if position == (self.right, 1):
                 return (corners[0], corners[1], True, corners[3])
-            if position == (right, top):
+            if position == (self.right, self.top):
                 return (corners[0], corners[1], corners[2], True)
         return corners
 
@@ -291,7 +293,6 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         for corner in state[0]:
-            print corner
             if not corner:
                 return False
         return True
@@ -314,11 +315,10 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
-                corners = self.getCorners(state[1], state[0])
+                corners = self.getCorners(corners = state[0], position = (nextx, nexty))
                 s = (corners, (nextx, nexty))
                 cost = self.getCostOfActions([action])
                 successors.append((s, action, cost))
-        print successors
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
