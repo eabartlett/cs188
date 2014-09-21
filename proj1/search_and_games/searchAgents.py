@@ -266,23 +266,33 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
 
+    def getCorners(self, corners, position):
+        if self.startingPosition in self.corners:
+            if position == (1,1):
+                return (True, corners[1], corners[2], corners[3])
+            if position == (1,top):
+                return (corners[0], True, corners[2], corners[3])
+            if position == (right, 1):
+                return (corners[0], corners[1], True, corners[3])
+            if position == (right, top):
+                return (corners[0], corners[1], corners[2], True)
+        return corners
+
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
+        state[0] = ((1,1), (1,top), (right, 1), (right, top))
         """
-        if self.startingPosition in self.corners:
-            print ((self.startingPosition), self.startingPosition)
-            return ((self.startingPosition), self.startingPosition)
-        print ((), self.startingPosition)
-        return ((), self.startingPosition)
+        return (self.getCorners((False, False, False, False), self.startingPosition), self.startingPosition)
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        for corner in self.corners:
-            if not corner in state[0]:
+        for corner in state[0]:
+            print corner
+            if not corner:
                 return False
         return True
 
@@ -304,12 +314,11 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
-                print "found not a wall"
-                corners = state[0] + (nextx, nexty) if (nextx, nexty) in self.corners else state[0]
+                corners = self.getCorners(state[1], state[0])
                 s = (corners, (nextx, nexty))
                 cost = self.getCostOfActions([action])
                 successors.append((s, action, cost))
-
+        print successors
         self._expanded += 1 # DO NOT CHANGE
         return successors
 

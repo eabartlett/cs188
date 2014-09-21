@@ -133,7 +133,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         if state in expanded:
             continue
         if problem.isGoalState(state):
-            print "Found goal state"
+            print state
             return moves
         expanded.add(state)
         dist = score - heuristic(state, problem = problem)
