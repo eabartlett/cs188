@@ -1,15 +1,15 @@
 # searchAgents.py
 # ---------------
-# Licensing Information:  You are free to use or extend these projects for 
-# educational purposes provided that (1) you do not distribute or publish 
-# solutions, (2) you retain this notice, and (3) you provide clear 
-# attribution to UC Berkeley, including a link to 
+# Licensing Information:  You are free to use or extend these projects for
+# educational purposes provided that (1) you do not distribute or publish
+# solutions, (2) you retain this notice, and (3) you provide clear
+# attribution to UC Berkeley, including a link to
 # http://inst.eecs.berkeley.edu/~cs188/pacman/pacman.html
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero 
+# The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and 
+# Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
@@ -269,33 +269,21 @@ class CornersProblem(search.SearchProblem):
         self.right = right
 
     def getCorners(self, corners, position):
-        if position in self.corners:
-            if position == (1,1):
-                return (True, corners[1], corners[2], corners[3])
-            if position == (1,self.top):
-                return (corners[0], True, corners[2], corners[3])
-            if position == (self.right, 1):
-                return (corners[0], corners[1], True, corners[3])
-            if position == (self.right, self.top):
-                return (corners[0], corners[1], corners[2], True)
-        return corners
+        return tuple([p for p in corners if p != position])
 
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
-        state[0] = ((1,1), (1,top), (right, 1), (right, top))
+        state[0] is a list of corners not yet visited
         """
-        return (self.getCorners((False, False, False, False), self.startingPosition), self.startingPosition)
+        return (self.getCorners(((1,1), (1,self.top), (self.right, 1), (self.right, self.top)), self.startingPosition), self.startingPosition)
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        for corner in state[0]:
-            if corner <= 0:
-                return False
-        return True
+        return not bool(state[0])
 
     def getSuccessors(self, state):
         """
@@ -316,10 +304,9 @@ class CornersProblem(search.SearchProblem):
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
                 corners = self.getCorners(corners = state[0], position = (nextx, nexty))
-                print corners
                 s = (corners, (nextx, nexty))
-                cost = self.getCostOfActions([action])
-                successors.append((s, action, cost))
+                # cost = self.getCostOfActions([action])
+                successors.append((s, action, 1))
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
