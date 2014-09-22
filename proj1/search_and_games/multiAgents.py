@@ -140,34 +140,47 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         depth = depth if depth else self.depth
-        print depth
         eval_fn = lambda action: self.evaluationFunction(gameState.generateSuccessor(agent, action))
+
         if depth == 0 and agent == 0:
             if gameState.getLegalActions(agent):
               return max(gameState.getLegalActions(agent), key = eval_fn)
-            else:
-              return self.evaluationFunction(gameState)
+        if not gameState.getLegalActions(agent):
+            print "Got to terminal state:", self.evaluationFunction(gameState)
+            return self.evaluationFunction(gameState)
         num_agents = gameState.getNumAgents()
         next_agent, d_depth = ((agent + 1)%num_agents, (agent+1)/num_agents)
-
         actions = gameState.getLegalActions(agent)
         successors = [(action, gameState.generateSuccessor(agent, action)) for action in actions]
-        mini_max_l = [state for state in successors if state[1].getLegalActions(next_agent)]
-        no_kid_l = [state for state in successors if not state[1].getLegalActions(next_agent)]
-
+        # mini_max_l = [(self.getAction(state[1], next_agent, depth - d_depth), state[1]) \
+        # for state in successors]
+        # mini_max_l = [state for state in successors if state[1].getLegalActions(next_agent)]
+        # no_kid_l = [state for state in successors if not state[1].getLegalActions(next_agent)]
         min_or_max = max if agent == 0 else min
-        if not no_kid_l:
-          return min_or_max([self.getAction(state[1], next_agent, depth - d_depth) for state in mini_max_l], key = eval_fn)[0]
-        if not mini_max_l:
-          return min_or_max(no_kid_l, key = lambda state: self.evaluationFunction(state[1]))[0]
+        #
+        # print mini_max_l, no_kid_l
+        # print depth, d_depth, agent, next_agent
+        #
+        # if not no_kid_l:
+        #   return min_or_max([(self.getAction(state[1], next_agent, depth - d_depth), state[1]) \
+        #   for state in mini_max_l], key = lambda tup: self.evaluationFunction(tup[1]))[0]
+        #
+        # if not mini_max_l:
+        #   return min_or_max(no_kid_l, key = lambda state: self.evaluationFunction(state[1]))[0]
+        #
+        # mini_max_l = min_or_max([(self.getAction(state[1], next_agent, depth - d_depth), state[1]) \
+        # for state in mini_max_l], key = lambda tup: self.evaluationFunction(tup[1]))
+        #
+        # return min_or_max(mini_max_l + no_kid_l, key = lambda tup: self.evaluationFunction(tup[1]))
 
-        mini_max_l = min_or_max([self.getAction(state[1], next_agent, depth - d_depth) for state in mini_max_l], key = eval_fn)
-        return min_or_max(mini_max_l + no_kid_l, key = lambda tup: self.evaluationFunction(tup[1]))
-        """
-        How sweet is this - if only it worked at leaves when depth != 0
-        return min_or_max([self.getAction(gameState.generateSuccessor(agent, action), next_agent, depth - d_depth)
-        for action in gameState.getLegalActions(agent)], key = eval_fn)
-        """
+        # How sweet is this - if only it worked at leaves when depth != 0
+        m_m = [(self.getAction(s[1], next_agent, depth - d_depth), s[1], s[0]) for s in successors]
+        # print "m_m:",m_m
+        mini_max_val = min_or_max(m_m, key = lambda s: s[0])
+        return mini_max_val[2] if depth == self.depth and agent == 0 else mini_max_val[0]
+        # if depth == self.depth and agent == 0:
+        #   return max(m_m, key = lambda s: s[0])[2]
+        # return min_or_max(m_m, key)
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
