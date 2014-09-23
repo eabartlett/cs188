@@ -83,22 +83,18 @@ def breadthFirstSearch(problem):
     """
     frontier = util.Queue()
     startState = problem.getStartState()
-    successors = problem.getSuccessors(startState)
-    actionsList=[]
 
     # Initialize froniter. 
-    for s in successors:
-        frontier.push(s)
+    frontier.push((startState,[]))
 
     # Iterate through the frontier, based on FIFO queue. 
     while not frontier.isEmpty():
-        node = frontier.pop()
+        node,actionsList = frontier.pop() #(state),[actionsList]
         if problem.isGoalState(node):
-            actionsList.append(node[1])
             return actionsList
         else:
             for children in problem.getSuccessors(node):
-                frontier.push(children)
+                frontier.push(children[0], actionsList + [children[1]])
     return []
 
     util.raiseNotDefined()

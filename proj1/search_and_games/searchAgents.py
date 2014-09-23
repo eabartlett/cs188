@@ -413,6 +413,15 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
+class ClosestFoodProblem(FoodSearchProblem):
+
+    def isGoalState(self, state):
+        x,y = state[0]
+        if state[1][x][y]:
+            return True
+        else:
+            return False
+
 def foodHeuristic(state, problem):
     """
     Your heuristic for the FoodSearchProblem goes here.
@@ -441,7 +450,8 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-    position, foodGrid = state
+    
+    """position, foodGrid = state
     food_l = foodGrid.asList()
     dists = [util.manhattanDistance(position, food) for food in food_l]
     # for i in xrange(len(food_l)):
@@ -450,7 +460,17 @@ def foodHeuristic(state, problem):
     #             dists.append(util.manhattanDistance(food_l[i], food_l[j]))
     if dists:
         return max(dists)
-    return 0
+    return 0"""
+
+    # Breadth First Search Implementation
+    position, foodGrid = state
+    foodList = foodGrid.asList()
+    currentLocation = problem.getStartState()
+
+    #instantiate my own search problem with the closest food as the answer 
+
+    closestFood = search.breadthFirstSearch
+    return FoodSearchProblem.getCostOfActions(search.breadthFirstSearch())
 
 
 def mazeDistance(point1, point2, gameState):
