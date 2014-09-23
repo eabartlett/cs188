@@ -142,21 +142,25 @@ class MinimaxAgent(MultiAgentSearchAgent):
         depth = depth if depth else self.depth
         eval_fn = lambda action: self.evaluationFunction(gameState.generateSuccessor(agent, action))
 
-        if depth == 0 and agent == 0:
-            if gameState.getLegalActions(agent):
-              return max(gameState.getLegalActions(agent), key = eval_fn)
-        if not gameState.getLegalActions(agent):
-            print "Got to terminal state:", self.evaluationFunction(gameState)
-            return self.evaluationFunction(gameState)
+        # if depth == 0 and agent == 0:
+        #     if gameState.getLegalActions(agent):
+        #       return max(gameState.getLegalActions(agent), key = eval_fn)
 
         num_agents = gameState.getNumAgents()
         next_agent, d_depth = ((agent + 1)%num_agents, (agent+1)/num_agents)
+        min_or_max = max if agent == 0 else min
+        if not gameState.getLegalActions(agent) or depth == 0 and agent == 0 :
+            # print "Got to terminal state:", self.evaluationFunction(gameState)
+            return self.evaluationFunction(gameState)
+        if depth - d_depth == 0 and gameState.getLegalActions(agent):
+          return min_or_max(gameState.getLegalActions(agent), key = eval_fn)
+
         actions = gameState.getLegalActions(agent)
         successors = [(action, gameState.generateSuccessor(agent, action)) for action in actions]
-        min_or_max = max if agent == 0 else min
-        m_m = [(self.getAction(s[1], next_agent, depth - d_depth), s[1], s[0]) for s in successors]
-        mini_max_val = min_or_max(m_m, key = lambda s: s[0])
-
+        # print depth, d_depth, next_agent
+        # m_m = [(self.getAction(s[1], next_agent, depth - d_depth), s[1], s[0]) for s in successors]
+        mini_max_val = min_or_max([(self.getAction(s[1], next_agent, depth - d_depth), s[1], s[0]) for s in successors],\
+         key = lambda s: s[0])
         return mini_max_val[2] if depth == self.depth and agent == 0 else mini_max_val[0]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
