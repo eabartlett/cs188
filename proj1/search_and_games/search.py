@@ -81,7 +81,26 @@ def breadthFirstSearch(problem):
 
     You are not required to implement this, but you may find it useful for Q5.
     """
-    "*** YOUR CODE HERE ***"
+    frontier = util.Queue()
+    startState = problem.getStartState()
+    successors = problem.getSuccessors(startState)
+    actionsList=[]
+
+    # Initialize froniter. 
+    for s in successors:
+        frontier.push(s)
+
+    # Iterate through the frontier, based on FIFO queue. 
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        if problem.isGoalState(node):
+            actionsList.append(node[1])
+            return actionsList
+        else:
+            for children in problem.getSuccessors(node):
+                frontier.push(children)
+    return []
+
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
