@@ -267,6 +267,7 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         self.top = top
         self.right = right
+        self.gameState = startingGameState
 
     def getCorners(self, corners, position):
         return tuple([p for p in corners if p != position])
@@ -407,6 +408,9 @@ class FoodSearchProblem:
             cost += 1
         return cost
 
+    def generateClosestFood(self):
+        return ClosestFoodProblem(self.startingGameState)
+
 class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):
@@ -416,11 +420,10 @@ class AStarFoodSearchAgent(SearchAgent):
 class ClosestFoodProblem(FoodSearchProblem):
 
     def isGoalState(self, state):
+        print "checking for goal state"
         x,y = state[0]
-        if state[1][x][y]:
-            return True
-        else:
-            return False
+        print state[1], state[1][x]
+        return state[1][x][y]
 
 def foodHeuristic(state, problem):
     """
@@ -450,27 +453,13 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-    
-    """position, foodGrid = state
+
+    position, foodGrid = state
     food_l = foodGrid.asList()
-    dists = [util.manhattanDistance(position, food) for food in food_l]
-    # for i in xrange(len(food_l)):
-    #     for j in xrange(i, len(food_l)):
-    #         if i != j:
-    #             dists.append(util.manhattanDistance(food_l[i], food_l[j]))
+    dists = [mazeDistance(position, food, problem.startingGameState) for food in food_l]
     if dists:
         return max(dists)
-    return 0"""
-
-    # Breadth First Search Implementation
-    position, foodGrid = state
-    foodList = foodGrid.asList()
-    currentLocation = problem.getStartState()
-
-    #instantiate my own search problem with the closest food as the answer 
-
-    closestFood = search.breadthFirstSearch
-    return FoodSearchProblem.getCostOfActions(search.breadthFirstSearch())
+    return 0
 
 
 def mazeDistance(point1, point2, gameState):

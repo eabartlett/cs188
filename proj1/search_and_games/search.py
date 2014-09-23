@@ -1,15 +1,15 @@
 # search.py
 # ---------
-# Licensing Information:  You are free to use or extend these projects for 
-# educational purposes provided that (1) you do not distribute or publish 
-# solutions, (2) you retain this notice, and (3) you provide clear 
-# attribution to UC Berkeley, including a link to 
+# Licensing Information:  You are free to use or extend these projects for
+# educational purposes provided that (1) you do not distribute or publish
+# solutions, (2) you retain this notice, and (3) you provide clear
+# attribution to UC Berkeley, including a link to
 # http://inst.eecs.berkeley.edu/~cs188/pacman/pacman.html
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero 
+# The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and 
+# Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
@@ -84,17 +84,21 @@ def breadthFirstSearch(problem):
     frontier = util.Queue()
     startState = problem.getStartState()
 
-    # Initialize froniter. 
+    # Initialize froniter.
     frontier.push((startState,[]))
-
-    # Iterate through the frontier, based on FIFO queue. 
+    expanded = set()
+    visited = set()
+    # Iterate through the frontier, based on FIFO queue.
     while not frontier.isEmpty():
         node,actionsList = frontier.pop() #(state),[actionsList]
+        expanded.add(node)
         if problem.isGoalState(node):
             return actionsList
         else:
             for children in problem.getSuccessors(node):
-                frontier.push(children[0], actionsList + [children[1]])
+                if children[0] not in expanded or children[0] not in visited:
+                    visited.add(children[0])
+                    frontier.push((children[0], actionsList + [children[1]]))
     return []
 
     util.raiseNotDefined()
