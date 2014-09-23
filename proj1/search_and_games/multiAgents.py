@@ -141,24 +141,17 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         depth = depth if depth else self.depth
         eval_fn = lambda action: self.evaluationFunction(gameState.generateSuccessor(agent, action))
-
-        # if depth == 0 and agent == 0:
-        #     if gameState.getLegalActions(agent):
-        #       return max(gameState.getLegalActions(agent), key = eval_fn)
-
         num_agents = gameState.getNumAgents()
         next_agent, d_depth = ((agent + 1)%num_agents, (agent+1)/num_agents)
         min_or_max = max if agent == 0 else min
-        if not gameState.getLegalActions(agent) or depth == 0 and agent == 0 :
-            # print "Got to terminal state:", self.evaluationFunction(gameState)
+
+        if not gameState.getLegalActions(agent) or depth == 0:
             return self.evaluationFunction(gameState)
         if depth - d_depth == 0 and gameState.getLegalActions(agent):
-          return min_or_max(gameState.getLegalActions(agent), key = eval_fn)
+          return min_or_max([eval_fn(action) for action in gameState.getLegalActions(agent)])
 
         actions = gameState.getLegalActions(agent)
         successors = [(action, gameState.generateSuccessor(agent, action)) for action in actions]
-        # print depth, d_depth, next_agent
-        # m_m = [(self.getAction(s[1], next_agent, depth - d_depth), s[1], s[0]) for s in successors]
         mini_max_val = min_or_max([(self.getAction(s[1], next_agent, depth - d_depth), s[1], s[0]) for s in successors],\
          key = lambda s: s[0])
         return mini_max_val[2] if depth == self.depth and agent == 0 else mini_max_val[0]
