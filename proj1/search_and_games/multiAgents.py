@@ -74,30 +74,43 @@ class ReflexAgent(Agent):
         newGhostStates = successorGameState.getGhostStates()
         newGhostPositions = [ghost.getPosition() for ghost in newGhostStates]
         newGhostDistances = [manhattanDistance(newPos, ghost) for ghost in newGhostPositions]
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-        food = max([util.manhattanDistance(food, newPos) for food in newFood.asList()]) if newFood.asList() else 1
-
+        food = [util.manhattanDistance(food, newPos) for food in newFood.asList()] if newFood.asList() else [0]
+        capsule = [util.manhattanDistance(cap, newPos) for cap in successorGameState.getCapsules()] \
+        if successorGameState.getCapsules() else [0]
         r = random.Random()
 
-        if max(newScaredTimes) <= 0:
-            if min(newGhostDistances) >= 3:
-                return -food + 2 * r.random()
-            if min(newGhostDistances) <= 0:
-                return -float('inf')
-            return sum([-13/dist for dist in newGhostDistances])
+        f_food = -(min(food)*20+max(food))/len(food)
+        f_capsule = -min(capsule)
 
-
-        scaredVals = []
         for state in newGhostStates:
+            if state.scaredTimer > 0:
+                return -manhattanDistance(newPos, state.getPosition()) * 3
             if state.getPosition() == newPos and not state.scaredTimer > 0:
                 return -float('inf')
-            elif state.getPosition() == newPos and state.scaredTimer > 0:
+            if state.getPosition() == newPos and state.scaredTimer > 0:
                 return float('inf')
-            elif state.scaredTimer > 0:
-                scaredVals.append(state.scaredTimer * 10.0 / util.manhattanDistance(state.getPosition(), newPos))
-            else:
-                scaredVals.append(-13/util.manhattanDistance(state.getPosition(), newPos))
-        return sum(scaredVals)
+        if min(newGhostDistances) <= 3:
+            return sum([-13/dist for dist in newGhostDistances]) + f_food + f_capsule + r.random()
+
+
+        return f_food + f_capsule + r.random()
+
+        # if max(newScaredTimes) <= 0:
+        #     if min(newGhostDistances) >= 3:
+        #         return -food + 2 * r.random()
+        #     if min(newGhostDistances) <= 0:
+        #         return -float('inf')
+        #     return sum([-13/dist for dist in newGhostDistances])
+        #
+        #
+        # scaredVals = []
+        # for state in newGhostStates:
+        #
+        #     elif state.scaredTimer > 0:
+        #         scaredVals.append(state.scaredTimer * 10.0 / util.manhattanDistance(state.getPosition(), newPos))
+        #     else:
+        #         scaredVals.append(-13/util.manhattanDistance(state.getPosition(), newPos))
+        # return sum(scaredVals)
 
 
 
@@ -208,8 +221,7 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    pass
 
 # Abbreviation
 better = betterEvaluationFunction
