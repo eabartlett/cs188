@@ -202,12 +202,20 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
+    r = random.Random()
 
     def eat_food(action):
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newFood = successorGameState.getFood().asList()
         oldFood = currentGameState.getFood().asList()
-        return len(oldFood) > len(newFood)
+        return (len(oldFood) > len(newFood)) * 10000 * scoreEvaluationFunction(successorGameState)
+
+    def closest_food(action):
+        successorGameState = currentGameState.generatePacmanSuccessor(action)
+        newFood = successorGameState.getFood()
+        newPos = successorGameState.getPacmanPosition()
+        food = max([util.manhattanDistance(food, newPos) for food in newFood.asList()]) if newFood.asList() else 0
+        return -200*food* scoreEvaluationFunction(successorGameState)
 
     def finna_die(action):
         successorGameState = currentGameState.generatePacmanSuccessor(action)
@@ -216,7 +224,7 @@ def betterEvaluationFunction(currentGameState):
         newGhostPositions = [ghost.getPosition() for ghost in newGhostStates]
         for state in newGhostStates:
             if state.getPosition() == newPos and not state.scaredTimer > 0:
-                return True
+                return -float("inf")
         return False
 
     def ghost_buster(action):
@@ -226,20 +234,17 @@ def betterEvaluationFunction(currentGameState):
         newGhostPositions = [ghost.getPosition() for ghost in newGhostStates]
         for state in newGhostStates:
             if state.getPosition() == newPos and state.scaredTimer > 0:
-                return True
+                return scoreEvaluationFunction(successorGameState)
         return False
 
-    if currentGameState.isLose():
-        return -float('inf')
-    if currentGameState.isWin():
-        return float('inf')
     actions = currentGameState.getLegalPacmanActions()
-    eat_bust_die = [(eat_food(a),finna_die(a),ghost_buster(a)) for a in actions]
-    ebd = [e*1000-d*100000000+100000*g for (e,d,g) in eat_bust_die]
+    eating = [eat_food(a) + finna_die(a) + closest_food(a) for a in actions]
+    # eat_bust_die = [(eat_food(a),finna_die(a),ghost_buster(a)) for a in actions]
+    # ebd = [e*1000-d*100000000+100000*g for (e,d,g) in eat_bust_die]
     averager = len(actions) if actions else 1
-    val = sum(ebd)/averager
-    print val
-    return val
+    # val = sum(ebd)/averager
+    # print sum(eating)
+    return sum(eating)/averager
 
 # Abbreviation
 better = betterEvaluationFunction
