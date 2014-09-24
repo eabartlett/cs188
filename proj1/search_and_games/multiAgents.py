@@ -200,7 +200,13 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 9).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: We started with the basic cases for Winning, losing, or eating
+      a ghost. Each of these correspond to either very desirable or undesirable.
+      Then we decided that we always wanted our packman to go towards food, so
+      we weight food being in our space higher. Then we add in the average distance
+      we are from the ghosts weighted by a risk factor - we use the scoreEvalFunction
+      for our risk factor. We felt that the better score a board has, the more
+      aggressive we should play.
     """
     def eat_ghost():
         actions = currentGameState.getLegalPacmanActions()
@@ -212,6 +218,11 @@ def betterEvaluationFunction(currentGameState):
                 if state.getPosition() == newPos and state.scaredTimer > 0:
                     return True
         return False
+
+    if currentGameState.isWin():
+        return float('inf')
+    if currentGameState.isLose():
+        return -float('inf')
     if eat_ghost():
         return float('inf')
     pos = currentGameState.getPacmanPosition()
@@ -221,7 +232,7 @@ def betterEvaluationFunction(currentGameState):
     ghostStates = currentGameState.getGhostStates()
     ghostPositions = [ghost.getPosition() for ghost in ghostStates]
     ghostDistances = [manhattanDistance(pos, ghost) for ghost in ghostPositions] if ghostStates else [0]
-    return  is_food * 1000 + sum(ghostDistances)/len(ghostDistances)
+    return  is_food * 1000 + sum(ghostDistances)/len(ghostDistances) * scoreEvaluationFunction(currentGameState)
 
 # # Abbreviation
 better = betterEvaluationFunction
