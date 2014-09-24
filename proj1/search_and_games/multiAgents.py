@@ -74,8 +74,8 @@ class ReflexAgent(Agent):
         oldFood = currentGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newGhostPositions = [ghost.getPosition() for ghost in newGhostStates]
-        newGhostDistances = [manhattanDistance(newPos, ghost) for ghost in newGhostPositions]
-        newScaredTimes = [ghost.scaredTimer for ghost in newGhostStates]
+        newGhostDistances = [manhattanDistance(newPos, ghost) for ghost in newGhostPositions] if newGhostStates else [0]
+        newScaredTimes = [ghost.scaredTimer for ghost in newGhostStates] if newGhostStates else [0]
         food = min([util.manhattanDistance(food, newPos) for food in newFood.asList()]) if newFood.asList() else 0
         eatFood = len(newFood.asList()) < len(oldFood.asList())
 
@@ -202,49 +202,26 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    r = random.Random()
-
-    def eat_food(action):
-        successorGameState = currentGameState.generatePacmanSuccessor(action)
-        newFood = successorGameState.getFood().asList()
-        oldFood = currentGameState.getFood().asList()
-        return (len(oldFood) > len(newFood)) * 10000 * scoreEvaluationFunction(successorGameState)
-
-    def closest_food(action):
-        successorGameState = currentGameState.generatePacmanSuccessor(action)
-        newFood = successorGameState.getFood()
-        newPos = successorGameState.getPacmanPosition()
-        food = max([util.manhattanDistance(food, newPos) for food in newFood.asList()]) if newFood.asList() else 0
-        return -200*food* scoreEvaluationFunction(successorGameState)
-
-    def finna_die(action):
-        successorGameState = currentGameState.generatePacmanSuccessor(action)
-        newPos = successorGameState.getPacmanPosition()
-        newGhostStates = successorGameState.getGhostStates()
-        newGhostPositions = [ghost.getPosition() for ghost in newGhostStates]
-        for state in newGhostStates:
-            if state.getPosition() == newPos and not state.scaredTimer > 0:
-                return -float("inf")
+    def eat_ghost():
+        actions = currentGameState.getLegalPacmanActions()
+        for action in actions:
+            sgs = currentGameState.generatePacmanSuccessor(action)
+            newPos = sgs.getPacmanPosition()
+            ghosts = sgs.getGhostStates()
+            for state in ghosts:
+                if state.getPosition() == newPos and state.scaredTimer > 0:
+                    return True
         return False
+    if eat_ghost():
+        return float('inf')
+    pos = currentGameState.getPacmanPosition()
+    x,y = pos
+    food = currentGameState.getFood()
+    is_food = food[x][y]
+    ghostStates = currentGameState.getGhostStates()
+    ghostPositions = [ghost.getPosition() for ghost in ghostStates]
+    ghostDistances = [manhattanDistance(pos, ghost) for ghost in ghostPositions] if ghostStates else [0]
+    return  is_food * 1000 + sum(ghostDistances)/len(ghostDistances)
 
-    def ghost_buster(action):
-        successorGameState = currentGameState.generatePacmanSuccessor(action)
-        newPos = successorGameState.getPacmanPosition()
-        newGhostStates = successorGameState.getGhostStates()
-        newGhostPositions = [ghost.getPosition() for ghost in newGhostStates]
-        for state in newGhostStates:
-            if state.getPosition() == newPos and state.scaredTimer > 0:
-                return scoreEvaluationFunction(successorGameState)
-        return False
-
-    actions = currentGameState.getLegalPacmanActions()
-    eating = [eat_food(a) + finna_die(a) + closest_food(a) for a in actions]
-    # eat_bust_die = [(eat_food(a),finna_die(a),ghost_buster(a)) for a in actions]
-    # ebd = [e*1000-d*100000000+100000*g for (e,d,g) in eat_bust_die]
-    averager = len(actions) if actions else 1
-    # val = sum(ebd)/averager
-    # print sum(eating)
-    return sum(eating)/averager
-
-# Abbreviation
+# # Abbreviation
 better = betterEvaluationFunction
