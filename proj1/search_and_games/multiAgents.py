@@ -72,20 +72,34 @@ class ReflexAgent(Agent):
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
+        newGhostPositions = [ghost.getPosition() for ghost in newGhostStates]
+        newGhostDistances = [manhattanDistance(newPos, ghost) for ghost in newGhostPositions]
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        food = max([util.manhattanDistance(food, newPos) for food in newFood.asList()]) if newFood.asList() else 1
+
+        r = random.Random()
+
+        if max(newScaredTimes) <= 0:
+            if min(newGhostDistances) >= 3:
+                return -food + 2 * r.random()
+            if min(newGhostDistances) <= 0:
+                return -float('inf')
+            return sum([-13/dist for dist in newGhostDistances])
+
+
         scaredVals = []
         for state in newGhostStates:
-          if state.getPosition() == newPos and not state.scaredTimer > 0:
-            return -float('inf')
-          elif state.getPosition() == newPos and state.scaredTimer > 0:
-            return float('inf')
-          elif state.scaredTimer > 0:
-            scaredVals.append(state.scaredTimer * 50.0 / util.manhattanDistance(state.getPosition(), newPos))
-          else:
-            scaredVals.append(util.manhattanDistance(state.getPosition(), newPos))
+            if state.getPosition() == newPos and not state.scaredTimer > 0:
+                return -float('inf')
+            elif state.getPosition() == newPos and state.scaredTimer > 0:
+                return float('inf')
+            elif state.scaredTimer > 0:
+                scaredVals.append(state.scaredTimer * 10.0 / util.manhattanDistance(state.getPosition(), newPos))
+            else:
+                scaredVals.append(-13/util.manhattanDistance(state.getPosition(), newPos))
+        return sum(scaredVals)
 
-        food = min([util.manhattanDistance(food, newPos) for food in newFood.asList()]) if newFood.asList() else 1
-        return -pow(2, food)+sum(scaredVals)
+
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -139,37 +153,53 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        depth = depth if depth else self.depth
-        eval_fn = lambda action: self.evaluationFunction(gameState.generateSuccessor(agent, action))
         num_agents = gameState.getNumAgents()
-        next_agent, d_depth = ((agent + 1)%num_agents, (agent+1)/num_agents)
+        depth = depth if depth != None else self.depth * num_agents
+        eval_fn = lambda action: self.evaluationFunction(gameState.generateSuccessor(agent, action))
+        next_agent = (agent + 1)%num_agents
         min_or_max = max if agent == 0 else min
 
         if not gameState.getLegalActions(agent) or depth == 0:
             return self.evaluationFunction(gameState)
-        if depth - d_depth == 0 and gameState.getLegalActions(agent):
+        if not gameState.getLegalActions(agent):
           return min_or_max([eval_fn(action) for action in gameState.getLegalActions(agent)])
 
         actions = gameState.getLegalActions(agent)
         successors = [(action, gameState.generateSuccessor(agent, action)) for action in actions]
-        mini_max_val = min_or_max([(self.getAction(s[1], next_agent, depth - d_depth), s[1], s[0]) for s in successors],\
+        mini_max_val = min_or_max([(self.getAction(s[1], next_agent, depth - 1), s[1], s[0]) for s in successors],\
          key = lambda s: s[0])
-        return mini_max_val[2] if depth == self.depth and agent == 0 else mini_max_val[0]
+        return mini_max_val[2] if depth == (self.depth*num_agents) and agent == 0 else mini_max_val[0]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 8)
     """
 
-    def getAction(self, gameState):
+    def getAction(self, gameState, agent = 0, depth = None):
         """
           Returns the expectimax action using self.depth and self.evaluationFunction
 
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        eval_fn = lambda action: self.evaluationFunction(gameState.generateSuccessor(agent, action))
+        num_agents = gameState.getNumAgents()
+        depth = depth if depth != None else self.depth * num_agents
+        next_agent = (agent + 1)%num_agents
+        actions = gameState.getLegalActions(agent)
+
+        if not actions or depth == 0:
+            return float(self.evaluationFunction(gameState))
+
+        successors = [(action, gameState.generateSuccessor(agent, action)) for action in actions]
+
+        if agent == 0:
+            expectimax = max([(self.getAction(s[1], next_agent, depth-1), s[1], s[0]) for s in successors],\
+             key = lambda s: s[0])
+            return expectimax[2] if depth == (self.depth * num_agents) else expectimax[0]
+
+        return sum([self.getAction(s[1], next_agent, depth - 1) for s in successors])/float(len(actions))
+
 
 def betterEvaluationFunction(currentGameState):
     """
