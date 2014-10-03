@@ -1,30 +1,30 @@
 # search.py
 # ---------
-# Licensing Information:  You are free to use or extend these projects for 
-# educational purposes provided that (1) you do not distribute or publish 
-# solutions, (2) you retain this notice, and (3) you provide clear 
-# attribution to UC Berkeley, including a link to 
+# Licensing Information:  You are free to use or extend these projects for
+# educational purposes provided that (1) you do not distribute or publish
+# solutions, (2) you retain this notice, and (3) you provide clear
+# attribution to UC Berkeley, including a link to
 # http://inst.eecs.berkeley.edu/~cs188/pacman/pacman.html
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero 
+# The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and 
+# Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
 # search.py
 # ---------
-# Licensing Information:  You are free to use or extend these projects for 
-# educational purposes provided that (1) you do not distribute or publish 
-# solutions, (2) you retain this notice, and (3) you provide clear 
-# attribution to UC Berkeley, including a link to 
+# Licensing Information:  You are free to use or extend these projects for
+# educational purposes provided that (1) you do not distribute or publish
+# solutions, (2) you retain this notice, and (3) you provide clear
+# attribution to UC Berkeley, including a link to
 # http://inst.eecs.berkeley.edu/~cs188/pacman/pacman.html
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero 
+# The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and 
+# Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
@@ -65,7 +65,7 @@ class SearchProblem:
         Returns True if and only if the state is a valid goal state.
         """
         util.raiseNotDefined()
-        
+
     def getGoalState(self):
         """
         Returns goal state for problem. Note only defined for problems that have
@@ -85,7 +85,7 @@ class SearchProblem:
         """
         Given a state, returns available actions.
         Returns a list of actions
-        """        
+        """
         util.raiseNotDefined()
 
     def getCostOfActions(self, actions):
@@ -147,8 +147,7 @@ def atLeastOne(expressions) :
     >>> print logic.pl_true(atleast1,model2)
     True
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return logic.Expr("|", *expressions)
 
 
 def atMostOne(expressions) :
@@ -156,8 +155,9 @@ def atMostOne(expressions) :
     Given a list of logic.Expr instances, return a single logic.Expr instance in CNF (conjunctive normal form)
     that represents the logic that at most one of the expressions in the list is true.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    exact = exactlyOne(expressions)
+    none = logic.Expr("&",logic.Expr("~", *expressions))
+    return logic.Expr("|", none, exact)
 
 
 def exactlyOne(expressions) :
@@ -165,8 +165,12 @@ def exactlyOne(expressions) :
     Given a list of logic.Expr instances, return a single logic.Expr instance in CNF (conjunctive normal form)
     that represents the logic that exactly one of the expressions in the list is true.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    exprs = []
+    for i in xrange(len(expressions)):
+        other = [logic.Expr("~", expr) for expr in expressions[:i]+expressions[i+1:]]
+        exprs.append(logic.Expr("&", expressions[i], *other))
+    # exprs = [logic.Expr("&",logic.Expr(expressions[i], logic.Expr("~", *(expressions[:i]+expressions[i+1:])))) for i in xrange(len(expressions))]
+    return logic.Expr("|", *exprs)
 
 
 def extractActionSequence(model, actions):
@@ -210,7 +214,7 @@ def foodGhostLogicPlan(problem):
     Given an instance of a FoodGhostSearchProblem, return a list of actions that help Pacman
     eat all of the food and avoid patrolling ghosts.
     Ghosts only move east and west. They always start by moving East, unless they start next to
-    and eastern wall. 
+    and eastern wall.
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
@@ -225,6 +229,3 @@ fglp = foodGhostLogicPlan
 
 # Some for the logic module uses pretty deep recursion on long expressions
 sys.setrecursionlimit(100000)
-
-
-
