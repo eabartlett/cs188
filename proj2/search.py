@@ -165,12 +165,8 @@ def exactlyOne(expressions) :
     Given a list of logic.Expr instances, return a single logic.Expr instance in CNF (conjunctive normal form)
     that represents the logic that exactly one of the expressions in the list is true.
     """
-    exprs = []
-    for i in xrange(len(expressions)):
-        other = [logic.Expr("~", expr) for expr in expressions[:i]+expressions[i+1:]]
-        exprs.append(logic.Expr("&", expressions[i], *other))
-    # exprs = [logic.Expr("&",logic.Expr(expressions[i], logic.Expr("~", *(expressions[:i]+expressions[i+1:])))) for i in xrange(len(expressions))]
-    return logic.Expr("|", *exprs)
+    return logic.Expr("|", *[logic.Expr("&", expressions[i], \
+    *[logic.Expr("~", expr) for expr in expressions[:i]+expressions[i+1:]]) for i in xrange(len(expressions))])
 
 
 def extractActionSequence(model, actions):
