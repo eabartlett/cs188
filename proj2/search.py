@@ -181,8 +181,15 @@ def extractActionSequence(model, actions):
     >>> print plan
     ['West', 'South', 'North']
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    plan = []
+    i = 0
+    while True:
+        true_actions = [a for a in actions if logic.PropSymbolExpr(a, i) in model and model[logic.PropSymbolExpr(a, i)]]
+        if not true_actions:
+            break
+        plan.append(true_actions[0])
+        i += 1
+    return plan
 
 
 def positionLogicPlan(problem):
