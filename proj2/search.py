@@ -206,22 +206,19 @@ def positionLogicPlan(problem):
 
     while not terminal_state:
         time += 1
-        next_action_states = reduce(lambda x,y: x + y, [getActionsAndState(problem,s[0],s[2],time) for s in next_action_states])
+        next_action_states = reduce(lambda x,y: x + y, [getActionsAndState(problem,s[0],s[1],time) for s in next_action_states])
         next_action_states = filter(lambda s: s[0] not in expanded, next_action_states)
         for s in next_action_states:
             expanded.add(s[0])
         terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
     sol_state = [problem.terminalTest(s[0]) for s in next_action_states].index(True)
-    model = logic.pycoSAT([logic.Expr("&", *next_action_states[sol_state][2])])
+    model = logic.pycoSAT([logic.Expr("&", *next_action_states[sol_state][1])])
     if model:
-        sol = extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST])
-        return sol
+        return extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST])
     return []
 
 def getActionsAndState(problem, state, actions=[], time=0):
-    stuff = [(problem.result(state, a)[0], a, actions + [logic.PropSymbolExpr(a, time)], logic.PropSymbolExpr(a, time))\
-            for a in problem.actions(state)]
-    return stuff
+    return [(problem.result(state, a)[0], actions + [logic.PropSymbolExpr(a, time)]) for a in problem.actions(state)]
 
 def containsGoalState(problem, states):
     return sum([s == problem.getGoalState() for s in states]) > 0
