@@ -182,7 +182,6 @@ def extractActionSequence(model, actions):
     >>> print plan
     ['West', 'South', 'North']
     """
-    print actions
     plan = []
     i = 0
     while True:
@@ -199,32 +198,6 @@ def positionLogicPlan(problem):
     Given an instance of a PositionSearchProblem, return a list of actions that lead to the goal.
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
-    """
-    """
-    Need to perpetuate the expressions through states and then solve the one that has the goal state in it
-
-    while not terminal_state:
-        expr = exactlyOne([s[2] for s in next_action_states])
-        expressions.append(expr)
-        time += 1
-        next_action_states = reduce(lambda x,y: x + y, [getActionsAndState(problem,s[0],time) for s in next_action_states])
-        next_action_states = filter(lambda s: s[0] not in expanded, next_action_states)
-        for s in next_action_states:
-            expanded.add(s[0])
-        terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
-    sol_state = [problem.terminalTest(s[0]) for s in next_action_states].index(True)
-    final_actions = [s[2] for s  in next_action_states]
-    false_finals = final_actions[:sol_state] + final_actions[sol_state+1:]
-    expressions.append(logic.Expr("&", final_actions[sol_state], *[logic.Expr("~", e) for e in false_finals]))
-    print expressions
-    model = logic.pycoSAT(expressions)
-    print model
-    if model:
-        print "tryna return"
-        sol = extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST])
-        print sol
-        return sol
-    return []
     """
     time = 0
     next_action_states = getActionsAndState(problem, problem.getStartState(), [], 0)
