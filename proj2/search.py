@@ -36,6 +36,7 @@ Pacman agents (in searchAgents.py).
 import util
 import sys
 import logic
+import game
 
 class SearchProblem:
     """
@@ -181,6 +182,7 @@ def extractActionSequence(model, actions):
     >>> print plan
     ['West', 'South', 'North']
     """
+    print actions
     plan = []
     i = 0
     while True:
@@ -198,9 +200,42 @@ def positionLogicPlan(problem):
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    time = 0
+    next_action_states = getActionsAndState(problem, problem.getStartState(), time)
+    terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
+    expressions = []
+    expanded = set([problem.getStartState])
+    """
+    Need to perpetuate the expressions through states and then solve the one that has the goal state in it
+    """
+    while not terminal_state:
+        expr = exactlyOne([s[2] for s in next_action_states])
+        expressions.append(expr)
+        time += 1
+        next_action_states = reduce(lambda x,y: x + y, [getActionsAndState(problem,s[0],time) for s in next_action_states])
+        next_action_states = filter(lambda s: s[0] not in expanded, next_action_states)
+        for s in next_action_states:
+            expanded.add(s[0])
+        terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
+    sol_state = [problem.terminalTest(s[0]) for s in next_action_states].index(True)
+    final_actions = [s[2] for s  in next_action_states]
+    false_finals = final_actions[:sol_state] + final_actions[sol_state+1:]
+    expressions.append(logic.Expr("&", final_actions[sol_state], *[logic.Expr("~", e) for e in false_finals]))
+    print expressions
+    model = logic.pycoSAT(expressions)
+    print model
+    if model:
+        print "tryna return"
+        sol = extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST])
+        print sol
+        return sol
+    return []
 
+def getActionsAndState(problem, state, time=0):
+    return [(problem.result(state, a)[0], a, logic.PropSymbolExpr(a, time)) for a in problem.actions(state)]
+
+def containsGoalState(problem, states):
+    return sum([s == problem.getGoalState() for s in states]) > 0
 
 def foodLogicPlan(problem):
     """
