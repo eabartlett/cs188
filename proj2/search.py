@@ -200,14 +200,9 @@ def positionLogicPlan(problem):
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
-    time = 0
-    next_action_states = getActionsAndState(problem, problem.getStartState(), time)
-    terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
-    expressions = []
-    expanded = set([problem.getStartState])
     """
     Need to perpetuate the expressions through states and then solve the one that has the goal state in it
-    """
+
     while not terminal_state:
         expr = exactlyOne([s[2] for s in next_action_states])
         expressions.append(expr)
@@ -230,9 +225,30 @@ def positionLogicPlan(problem):
         print sol
         return sol
     return []
+    """
+    time = 0
+    next_action_states = getActionsAndState(problem, problem.getStartState(), [], 0)
+    terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
+    expanded = set([problem.getStartState])
 
-def getActionsAndState(problem, state, time=0):
-    return [(problem.result(state, a)[0], a, logic.PropSymbolExpr(a, time)) for a in problem.actions(state)]
+    while not terminal_state:
+        time += 1
+        next_action_states = reduce(lambda x,y: x + y, [getActionsAndState(problem,s[0],s[2],time) for s in next_action_states])
+        next_action_states = filter(lambda s: s[0] not in expanded, next_action_states)
+        for s in next_action_states:
+            expanded.add(s[0])
+        terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
+    sol_state = [problem.terminalTest(s[0]) for s in next_action_states].index(True)
+    model = logic.pycoSAT([logic.Expr("&", *next_action_states[sol_state][2])])
+    if model:
+        sol = extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST])
+        return sol
+    return []
+
+def getActionsAndState(problem, state, actions=[], time=0):
+    stuff = [(problem.result(state, a)[0], a, actions + [logic.PropSymbolExpr(a, time)], logic.PropSymbolExpr(a, time))\
+            for a in problem.actions(state)]
+    return stuff
 
 def containsGoalState(problem, states):
     return sum([s == problem.getGoalState() for s in states]) > 0
