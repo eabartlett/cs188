@@ -257,40 +257,38 @@ def foodGhostLogicPlan(problem):
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
-    def foodGhostHeuristic(state, problem, time):
-        ghostPositions = [getGhostPosition(time, problem, pos.getPosition()) for pos in problem.getGhostStartStates()]
-        print ghostPositions
-        print state[0]
-        for ghostPos in ghostPositions:
-            if state[0] == ghostPos:
-                return 999999
-        food_l = [util.manhattanDistance(food, state[0]) for food in state[1].asList()]
-        if not food_l:
-            return 0
-        return max(food_l)
+    def foodGhostHeuristic(problem):
+        # print "finding pos's"
+        ghostPositions = [getGhostPositionArray(problem, pos.getPosition()) for pos in problem.getGhostStartStates()]
 
-    return aStarSearch(problem, foodGhostHeuristic)
+        def h(state, problem, time):
+            # print ghostPositions
+            # print state[0]
+            for ghostPos in ghostPositions:
+                if state[0] == ghostPos[time%len(ghostPos)]:
+                    print "about to hit a ghost"
+                    return 99999999999
+            food_l = [util.manhattanDistance(food, state[0]) for food in state[1].asList()]
+            if not food_l:
+                return 0
+            return max(food_l)
+        return h
 
-def getGhostPosition(time, foodGhostProblem, startPos):
-    leftWall, row = startPos
-    rightWall = startPos[0]
-    while not foodGhostProblem.isWall((leftWall, row)):
-        leftWall -= 1
-    while not foodGhostProblem.isWall((rightWall, row)):
-        rightWall += 1
-    width = rightWall-leftWall-1
-    start = startPos[0] - leftWall - 1
-    curr_loop = time % (2 * (width - 1))
-    if curr_loop <= (start * 2) and curr_loop >= start:
-        return (curr_loop - start + leftWall, row)
-    if curr_loop < start:
-        return (leftWall + (start - curr_loop), row)
-    curr_loop -= (start * 2)
-    start = startPos[0]
-    to_right = rightWall - startPos[0] - 1
-    if curr_loop <= to_right:
-        return (start + curr_loop, row)
-    return (rightWall - (curr_loop - to_right + 1), row)
+    return aStarSearch(problem, foodGhostHeuristic(problem))
+
+def getGhostPositionArray(foodGhostProblem, startPos):
+    x,y = startPos
+    pos_arr = [(x, y)]
+    while not foodGhostProblem.isWall((x-1, y)):
+        x -= 1
+        pos_arr.append((x,y))
+    while not foodGhostProblem.isWall((x+1, y)):
+        x += 1
+        pos_arr.append((x,y))
+    while x-1 != startPos[0] and x > startPos[0]:
+        x -= 1
+        pos_arr.append((x,y))
+    return pos_arr
 
 
 
