@@ -213,13 +213,22 @@ def positionLogicPlan(problem):
             expanded.add(s[0])
         terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
     sol_state = [problem.terminalTest(s[0]) for s in next_action_states].index(True)
+    print "trying to find model"
+    print "sol_state:", next_action_states[sol_state][1]
     model = logic.pycoSAT([logic.Expr("&", *next_action_states[sol_state][1])])
+    print model
     if model:
         return extractActionSequence(model, possible_actions)
     return []
 
 def getActionsAndState(problem, state, actions=[], time=0):
-    return [(problem.result(state, a)[0], actions + [logic.PropSymbolExpr(a, time)]) for a in problem.actions(state)]
+    expr_and_a = [(a, logic.PropSymbolExpr(a, time)) for a in problem.actions(state)]
+    actions_and_state = []
+    for i in xrange(len(expr_and_a)):
+        expr = logic.Expr("&", expr_and_a[i][1], \
+                          *[logic.Expr("~", a[1]) for a in expr_and_a if a[0] != expr_and_a[i][0]])
+        actions_and_state += [(problem.result(state, expr_and_a[i][0])[0], actions + [expr])]
+    return actions_and_state
 
 def containsGoalState(problem, states):
     return sum([s == problem.getGoalState() for s in states]) > 0
