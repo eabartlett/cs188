@@ -166,8 +166,8 @@ def exactlyOne(expressions) :
     Given a list of logic.Expr instances, return a single logic.Expr instance in CNF (conjunctive normal form)
     that represents the logic that exactly one of the expressions in the list is true.
     """
-    return logic.Expr("|", *[logic.Expr("&", expressions[i], \
-    *[logic.Expr("~", expr) for expr in expressions[:i]+expressions[i+1:]]) for i in xrange(len(expressions))])
+    return logic.Expr("|", *[logic.Expr("&", expr_i, \
+        *[logic.Expr("~", expr_j) for expr_j in expressions if expr_i != expr_j]) for expr_i in expressions])
 
 
 def extractActionSequence(model, actions):
@@ -226,7 +226,7 @@ def getActionsAndState(problem, state, actions=[], time=0):
     actions_and_state = []
     for i in xrange(len(expr_and_a)):
         expr = logic.Expr("&", expr_and_a[i][1], \
-                          *[logic.Expr("~", a[1]) for a in expr_and_a if a[0] != expr_and_a[i][0]])
+            *[logic.Expr("~", a[1]) for a in expr_and_a if a[0] != expr_and_a[i][0]])
         actions_and_state += [(problem.result(state, expr_and_a[i][0])[0], actions + [expr])]
     return actions_and_state
 
@@ -260,13 +260,14 @@ def foodGhostLogicPlan(problem):
     def foodGhostHeuristic(problem):
         # print "finding pos's"
         ghostPositions = [getGhostPositionArray(problem, pos.getPosition()) for pos in problem.getGhostStartStates()]
+        print ghostPositions
 
         def h(state, problem, time):
             # print ghostPositions
             # print state[0]
             for ghostPos in ghostPositions:
-                if state[0] == ghostPos[time%len(ghostPos)]:
-                    print "about to hit a ghost"
+                if state[0] == ghostPos[time%len(ghostPos)] or state[0] == ghostPos[(time-1)%len(ghostPos)]:
+                    # print "about to hit a ghost"
                     return 99999999999
             food_l = [util.manhattanDistance(food, state[0]) for food in state[1].asList()]
             if not food_l:
@@ -279,15 +280,19 @@ def foodGhostLogicPlan(problem):
 def getGhostPositionArray(foodGhostProblem, startPos):
     x,y = startPos
     pos_arr = [(x, y)]
-    while not foodGhostProblem.isWall((x-1, y)):
-        x -= 1
-        pos_arr.append((x,y))
     while not foodGhostProblem.isWall((x+1, y)):
         x += 1
         pos_arr.append((x,y))
-    while x-1 != startPos[0] and x > startPos[0]:
+        # print "loooooooop1"
+    while not foodGhostProblem.isWall((x-1, y)):
         x -= 1
         pos_arr.append((x,y))
+        # print "loooooooop2"
+    while x + 1 < startPos[0]:
+        x += 1
+        pos_arr.append((x,y))
+        # print x, startPos[0]
+    pos_arr = [pos for pos in pos_arr] if pos_arr[0] != pos_arr[-1] and len(pos_arr) > 1 else pos_arr[:len(pos_arr)-1]
     return pos_arr
 
 
@@ -296,24 +301,33 @@ def aStarSearch(problem, heuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     possible_actions = [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST]
     frontier = util.PriorityQueue()
-    frontier.push((problem.getStartState(), [], 0, -1), priority = heuristic(problem.getStartState(), problem = problem, time = 0))
-    expanded = set()
+    print problem.getStartState(), problem.getStartState()[1].asList()
+    initial_score = heuristic(problem.getStartState(), problem = problem, time = 0)
+    frontier.push((problem.getStartState(), [], initial_score, 0), priority = initial_score)
+    expanded = set([(problem.getStartState(), 0)])
     while not frontier.isEmpty():
         #items in queue have form (state, expressions_to_state, step_cost, time)
-        (state, exps, score, time) = frontier.pop()
-        if state in expanded:
+        (state, exps, dist, time) = frontier.pop()
+        # print state
+        print dist, time, state
+        if state in expanded or dist >= 99999999999:
             continue
+        # print frontier.heap
+
         if problem.terminalTest(state):
+            # print "score: ", score
             model = logic.pycoSAT([logic.Expr("&", *exps)])
             if model:
                 return extractActionSequence(model, possible_actions)
             return []
-        expanded.add(state)
-        successors = getActionsAndState(problem, state, exps, time+1)
+        expanded.add((state, time))
+        successors = getActionsAndState(problem, state, exps, time)
         for successor in successors:
             s_state, s_exps = successor
-            s_h = score + 1 + heuristic(s_state, problem = problem, time = time)
-            frontier.push((s_state, s_exps, s_h, time+1), priority = s_h)
+            s_h = dist + 1 + heuristic(s_state, problem = problem, time = time+1)
+            # print s_h
+            if s_h < 99999999999:
+                frontier.push((s_state, s_exps, dist, time+1), priority = s_h)
     return []
 
 # Abbreviations
