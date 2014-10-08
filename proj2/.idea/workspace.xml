@@ -29,8 +29,8 @@
       <file leaf-file-name="search.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/search.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.86328125" vertical-offset="2817" max-vertical-offset="3990">
-              <caret line="232" column="7" selection-start-line="232" selection-start-column="7" selection-end-line="232" selection-end-column="7" />
+            <state vertical-scroll-proportion="0.765625" vertical-offset="2577" max-vertical-offset="4335">
+              <caret line="211" column="29" selection-start-line="211" selection-start-column="29" selection-end-line="211" selection-end-column="29" />
               <folding>
                 <element signature="e#1490#1501#0" expanded="true" />
               </folding>
@@ -41,18 +41,8 @@
       <file leaf-file-name="logic.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/logic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1350" max-vertical-offset="20580">
-              <caret line="90" column="4" selection-start-line="90" selection-start-column="4" selection-end-line="90" selection-end-column="4" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="patrolling4.lay" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/layouts/patrolling4.lay">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="180">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="7062" max-vertical-offset="20535">
+              <caret line="654" column="20" selection-start-line="654" selection-start-column="6" selection-end-line="654" selection-end-column="20" />
               <folding />
             </state>
           </provider>
@@ -61,7 +51,7 @@
       <file leaf-file-name="game.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/game.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2385" max-vertical-offset="10995">
+            <state vertical-scroll-proportion="0.0" vertical-offset="1635" max-vertical-offset="10995">
               <caret line="162" column="10" selection-start-line="162" selection-start-column="6" selection-end-line="162" selection-end-column="10" />
               <folding />
             </state>
@@ -71,7 +61,7 @@
       <file leaf-file-name="searchAgents.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/searchAgents.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="5895" max-vertical-offset="7545">
+            <state vertical-scroll-proportion="0.0" vertical-offset="2340" max-vertical-offset="7545">
               <caret line="424" column="8" selection-start-line="424" selection-start-column="8" selection-end-line="424" selection-end-column="8" />
               <folding />
             </state>
@@ -99,6 +89,7 @@
     <option name="changedFiles">
       <list>
         <option value="$PROJECT_DIR$/layouts/tester.lay" />
+        <option value="$PROJECT_DIR$/logic.py" />
         <option value="$PROJECT_DIR$/search.py" />
       </list>
     </option>
@@ -624,14 +615,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/logic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1002" max-vertical-offset="20535">
-          <caret line="90" column="4" selection-start-line="90" selection-start-column="4" selection-end-line="90" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/game.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="2430" max-vertical-offset="11040">
@@ -642,16 +625,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/searchAgents.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="6010" max-vertical-offset="7545">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6750" max-vertical-offset="7545">
           <caret line="424" column="8" selection-start-line="424" selection-start-column="8" selection-end-line="424" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/logic.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="7062" max-vertical-offset="20535">
+          <caret line="654" column="20" selection-start-line="654" selection-start-column="6" selection-end-line="654" selection-end-column="20" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/search.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.86328125" vertical-offset="2817" max-vertical-offset="3990">
-          <caret line="232" column="7" selection-start-line="232" selection-start-column="7" selection-end-line="232" selection-end-column="7" />
+        <state vertical-scroll-proportion="0.765625" vertical-offset="2577" max-vertical-offset="4335">
+          <caret line="211" column="29" selection-start-line="211" selection-start-column="29" selection-end-line="211" selection-end-column="29" />
           <folding>
             <element signature="e#1490#1501#0" expanded="true" />
           </folding>

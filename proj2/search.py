@@ -192,6 +192,31 @@ def extractActionSequence(model, actions):
         i += 1
     return plan
 
+def getPredecessors(problem, extractPos=lambda x: x, generateState=lambda x: x):
+    """
+    Given an instance of a problem - return a dictionary of {location: predecessors} for each
+    legal location in the maze
+    """
+    rows = [[(i, j) for i in xrange(problem.getWidth()) if not problem.isWall((i,j))] for j in xrange(problem.getHeight())]
+    positions = reduce(lambda x, y: x + y, rows)
+    predecessors = {pos:[] for pos in positions}
+    for pos in predecessors.keys():
+        successors = [(a, problem.result(generateState(pos), a)) for a in problem.actions(generateState(pos))]
+        for action, s in successors:
+            if extractPos(s) in predecessors:
+                predecessors[s].append((action, extractPos(s)))
+    return predecessors
+
+def generateSuccessorState(predecessors={}, time=0):
+    if time <= 1:
+        return [logic.Expr(">>", logic.PropSymbolExpr("P",pos[0],pos[1],time), \
+                exactlyOne([logic.Expr("&", logic.PropSymbolExpr(a, time-1), logic.PropSymbolExpr("P",p[0],p[1],time-1))\
+                for (a, p) in preds])) for (pos, preds) in predecessors.items()]
+    return [logic.Expr("=>", logic.PropSymbolExpr("P",pos[0],pos[1],time), \
+                exactlyOne([logic.Expr("&", logic.PropSymbolExpr(a, time-1), logic.PropSymbolExpr("P",p[0],p[1],time-1))\
+                for (a, p) in preds])) for (pos, preds) in predecessors.items()] + generateSuccessorState(predecessors,time-1)
+
+
 
 def positionLogicPlan(problem):
     """
@@ -199,7 +224,7 @@ def positionLogicPlan(problem):
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
-    pass
+    t = util.manhattanDistance(problem.getStartState(), problem.getGoalState())
 
 def getActionsAndState(problem, state, actions=[], time=0):
     expr_and_a = [(a, logic.PropSymbolExpr(a, time)) for a in problem.actions(state)]
@@ -210,8 +235,6 @@ def getActionsAndState(problem, state, actions=[], time=0):
         actions_and_state += [(problem.result(state, expr_and_a[i][0])[0], actions + [expr])]
     return actions_and_state
 
-def containsGoalState(problem, states):
-    return sum([s == problem.getGoalState() for s in states]) > 0
 
 def foodLogicPlan(problem):
     """
