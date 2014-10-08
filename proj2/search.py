@@ -199,27 +199,7 @@ def positionLogicPlan(problem):
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
-    possible_actions = [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST]
-    time = 0
-    next_action_states = getActionsAndState(problem, problem.getStartState(), [], 0)
-    terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
-    expanded = set([problem.getStartState()])
-
-    while not terminal_state:
-        time += 1
-        next_action_states = reduce(lambda x,y: x + y, [getActionsAndState(problem,s[0],s[1],time) for s in next_action_states])
-        next_action_states = filter(lambda s: s[0] not in expanded, next_action_states)
-        for s in next_action_states:
-            expanded.add(s[0])
-        terminal_state = containsGoalState(problem, [s[0] for s in next_action_states])
-    sol_state = [problem.terminalTest(s[0]) for s in next_action_states].index(True)
-    print "trying to find model"
-    print "sol_state:", next_action_states[sol_state][1]
-    model = logic.pycoSAT([logic.Expr("&", *next_action_states[sol_state][1])])
-    print model
-    if model:
-        return extractActionSequence(model, possible_actions)
-    return []
+    pass
 
 def getActionsAndState(problem, state, actions=[], time=0):
     expr_and_a = [(a, logic.PropSymbolExpr(a, time)) for a in problem.actions(state)]
@@ -240,34 +220,7 @@ def foodLogicPlan(problem):
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
-    def h(state):
-        food_l = [util.manhattanDistance(food, state[0]) for food in state[1].asList()]
-        if not food_l:
-            return 0
-        return max(food_l)
-
-    possible_actions = [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST]
-    frontier = util.PriorityQueue()
-    initial_score = h(problem.getStartState())
-    frontier.push((problem.getStartState(), [], 0, initial_score), priority = initial_score)
-    expanded = set([(problem.getStartState(), 0)])
-    while not frontier.isEmpty():
-        #items in queue have form (state, expressions_to_state, step_cost, time)
-        (state, exps, time, heur) = frontier.pop()
-        if state in expanded:
-            continue
-        if problem.terminalTest(state):
-            model = logic.pycoSAT([logic.Expr("&", *exps)])
-            if model:
-                return extractActionSequence(model, possible_actions)
-            return []
-        expanded.add(state)
-        successors = getActionsAndState(problem, state, exps, time)
-        for successor in successors:
-            s_state, s_exps = successor
-            s_h = time + 1 + h(s_state)
-            frontier.push((s_state, s_exps, time+1, s_h), priority = s_h)
-    return []
+    pass
 
 def foodGhostLogicPlan(problem):
     """
@@ -278,45 +231,6 @@ def foodGhostLogicPlan(problem):
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
-    def h(state, ghosts, time):
-        for ghostPos in ghosts:
-            if state[0] == ghostPos[time%len(ghostPos)] or state[0] == ghostPos[(time-1)%len(ghostPos)]:
-                return 99999999999
-        food_l = [util.manhattanDistance(food, state[0]) for food in state[1].asList()]
-        if not food_l:
-            return 0
-        return sum(food_l)/len(food_l)
-
-    #incorperate positions P[x,y,time] into exprs
-    ghosts = [getGhostPositionArray(problem, ghost.getPosition()) for ghost in problem.getGhostStartStates()]
-    expanded = [(ghostPos, set()) for ghostPos in ghosts]
-    possible_actions = [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST]
-    frontier = util.PriorityQueue()
-    initial_score = h(problem.getStartState(), ghosts = ghosts, time = 0)
-    frontier.push((problem.getStartState(), [], 0, initial_score), priority = initial_score)
-    while not frontier.isEmpty():
-        #items in queue have form (state, expressions_to_state, step_cost, time)
-        (state, exps, time, heur) = frontier.pop()
-        is_expanded = True
-        for s in expanded:
-            if (state, time % len(s[0])) not in s[1]:
-                is_expanded = False
-        if is_expanded:
-            continue
-        if problem.terminalTest(state):
-            model = logic.pycoSAT([logic.Expr("&", *exps)])
-            if model:
-                return extractActionSequence(model, possible_actions)
-            return []
-        for s in xrange(len(expanded)):
-            expanded[s][1].add((state, time % len(expanded[s][0])))
-        successors = getActionsAndState(problem, state, exps, time)
-        for successor in successors:
-            s_state, s_exps = successor
-            s_h = time + 1 + h(s_state, ghosts = ghosts, time = time+1)
-            if s_h < 99999999999:
-                frontier.push((s_state, s_exps, time+1, s_h), priority = s_h)
-    return []
 
 def getGhostPositionArray(foodGhostProblem, startPos):
     x,y = startPos
@@ -336,41 +250,6 @@ def getGhostPositionArray(foodGhostProblem, startPos):
     pos_arr = [pos for pos in pos_arr] if pos_arr[0] != pos_arr[-1] and len(pos_arr) > 1 else pos_arr[:len(pos_arr)-1]
     return pos_arr
 
-
-def aStarSearch(problem, heuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
-    #incorperate positions P[x,y,time] into exprs
-    possible_actions = [game.Directions.NORTH, game.Directions.SOUTH, game.Directions.EAST, game.Directions.WEST]
-    frontier = util.PriorityQueue()
-    # print problem.getStartState(), problem.getStartState()[1].asList()
-    initial_score = heuristic(problem.getStartState(), problem = problem, time = 0)
-    frontier.push((problem.getStartState(), [], 0, initial_score), priority = initial_score)
-    expanded = set([(problem.getStartState(), 0)])
-    while not frontier.isEmpty():
-        #items in queue have form (state, expressions_to_state, step_cost, time)
-        (state, exps, time, heur) = frontier.pop()
-        # print state
-        if state[1].count() < 7:
-            print time, state[0], state[1].count(), heur
-        if state in expanded:
-            continue
-        # print frontier.heap
-
-        if problem.terminalTest(state):
-            # print "score: ", score
-            model = logic.pycoSAT([logic.Expr("&", *exps)])
-            if model:
-                return extractActionSequence(model, possible_actions)
-            return []
-        expanded.add((state, heur))
-        successors = getActionsAndState(problem, state, exps, time)
-        for successor in successors:
-            s_state, s_exps = successor
-            s_h = time + 1 + heuristic(s_state, problem = problem, time = time+1)
-            # print s_h
-            if s_h < 99999999999:
-                frontier.push((s_state, s_exps, time+1, s_h), priority = s_h)
-    return []
 
 # Abbreviations
 plp = positionLogicPlan
