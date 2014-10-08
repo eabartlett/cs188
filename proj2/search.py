@@ -209,15 +209,15 @@ def getPredecessors(problem, extractPos=lambda x: x, generateState=lambda x: x):
 
 def generateSuccessorState(predecessors={}, time=0):
     actions = [game.Directions.EAST,game.Directions.SOUTH,game.Directions.WEST,game.Directions.NORTH]
-    t_actions = [logic.PropSymbolExpr(a, time-1) for a in actions]
+    t_actions = exactlyOne([logic.PropSymbolExpr(a, time-1) for a in actions])
     if time <= 1:
         return [exactlyOne([logic.PropSymbolExpr("P",pos[0],pos[1],time) for pos in predecessors.keys()])]+\
             [logic.Expr(">>", logic.PropSymbolExpr("P",pos[0],pos[1],time), \
             exactlyOne([logic.Expr("&", logic.PropSymbolExpr(a, time-1), logic.PropSymbolExpr("P",p[0],p[1],time-1))\
-            for (a, p) in preds])) for (pos, preds) in predecessors.items()] + t_actions
+            for (a, p) in preds])) for (pos, preds) in predecessors.items()] + list(t_actions)
     return [logic.Expr(">>", logic.PropSymbolExpr("P",pos[0],pos[1],time), \
             exactlyOne([logic.Expr("&", logic.PropSymbolExpr(a, time-1), logic.PropSymbolExpr("P",p[0],p[1],time-1))\
-            for (a, p) in preds])) for (pos, preds) in predecessors.items()] + t_actions +\
+            for (a, p) in preds])) for (pos, preds) in predecessors.items()] + list(t_actions) +\
            generateSuccessorState(predecessors,time-1)
 
 
