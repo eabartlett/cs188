@@ -212,6 +212,7 @@ def generateSuccessorState(predecessors={}, time=0, start=(0,0)):
     t_actions = exactlyOne([logic.PropSymbolExpr(a, time-1) for a in actions])
     if time <= 0:
         return []
+    
     return [exactlyOne([logic.PropSymbolExpr("P",pos[0],pos[1],time) for pos in predecessors.keys()])] +\
            [logic.to_cnf(logic.Expr(">>", logic.PropSymbolExpr("P",pos[0],pos[1],time), \
             exactlyOne([logic.Expr("&", logic.PropSymbolExpr(a, time-1), logic.PropSymbolExpr("P",p[0],p[1],time-1))\
