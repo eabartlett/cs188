@@ -207,15 +207,15 @@ def getPredecessors(problem, extractPos=lambda x: x[0], generateState=lambda x: 
                 predecessors[extractPos(s)].append((action, pos))
     return predecessors
 
-def generateSuccessorState(predecessors={}, time=0):
+def generateSuccessorState(predecessors={}, time=0, start=(0,0)):
     actions = [game.Directions.EAST,game.Directions.SOUTH,game.Directions.WEST,game.Directions.NORTH]
     t_actions = exactlyOne([logic.PropSymbolExpr(a, time-1) for a in actions])
-    if time < 1:
+    if time <= 0:
         return []
     return [exactlyOne([logic.PropSymbolExpr("P",pos[0],pos[1],time) for pos in predecessors.keys()])] +\
-           [logic.Expr(">>", logic.PropSymbolExpr("P",pos[0],pos[1],time), \
+           [logic.to_cnf(logic.Expr(">>", logic.PropSymbolExpr("P",pos[0],pos[1],time), \
             exactlyOne([logic.Expr("&", logic.PropSymbolExpr(a, time-1), logic.PropSymbolExpr("P",p[0],p[1],time-1))\
-            for (a, p) in preds])) for (pos, preds) in predecessors.items()] + [t_actions] +\
+            for (a, p) in preds]))) for (pos, preds) in predecessors.items()] + [logic.to_cnf(t_actions)] +\
            generateSuccessorState(predecessors,time-1)
 
 
@@ -232,19 +232,17 @@ def positionLogicPlan(problem):
     preds = getPredecessors(problem)
     start_pos = problem.getStartState()
     init_state = [logic.Expr("&", logic.PropSymbolExpr("P", start_pos[0],start_pos[1],0),\
-                            *[logic.Expr("~", logic.PropSymbolExpr("P", s[0],s[1],0)) for s in preds.keys() if s != start_pos])]
+                *[logic.Expr("~", logic.PropSymbolExpr("P", s[0],s[1],0)) for s in preds.keys() if s != start_pos])]
     for t in xrange(init_t, 51):
-        print t
         goal = [logic.PropSymbolExpr("P", goal_s[0], goal_s[1]), \
-                logic.Expr(">>", logic.PropSymbolExpr("P", goal_s[0], goal_s[1]),\
-                   logic.Expr("|", *[logic.PropSymbolExpr("P", goal_s[0], goal_s[1], time) for time in xrange(1,t+1)]))]
-        successors = generateSuccessorState(preds, t)
-        exps = [logic.to_cnf(s) for s in goal + successors + init_state]
-        # print goal + successors + init_state
+                logic.to_cnf(logic.Expr(">>", logic.PropSymbolExpr("P", goal_s[0], goal_s[1]),\
+               logic.Expr("|", *[logic.PropSymbolExpr("P", goal_s[0], goal_s[1], time) for time in xrange(1,t+1)])))]
+        successors = generateSuccessorState(preds, t, start_pos)
+        exps = goal + successors + init_state
         model = logic.pycoSAT(exps)
         if model:
             return extractActionSequence(model, actions)
-    return 1/0
+    return []
 
 
 def foodLogicPlan(problem):
