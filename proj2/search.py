@@ -192,22 +192,22 @@ def extractActionSequence(model, actions):
         i += 1
     return plan
 
-def getPredecessors(problem, extractPos=lambda x: x, generateState=lambda x: x):
+def getPredecessors(problem, extractPos=lambda x: x[0], generateState=lambda x: x):
     """
     Given an instance of a problem - return a dictionary of {location: predecessors} for each
     legal location in the maze
     """
-    rows = [[(i, j) for i in xrange(problem.getWidth()) if not problem.isWall((i,j))] for j in xrange(problem.getHeight())]
+    rows = [[(i+1, j+1) for i in xrange(problem.getWidth()) if not problem.isWall((i+1,j+1))] for j in xrange(problem.getHeight())]
     positions = reduce(lambda x, y: x + y, rows)
     predecessors = {pos:[] for pos in positions}
     for pos in predecessors.keys():
         successors = [(a, problem.result(generateState(pos), a)) for a in problem.actions(generateState(pos))]
         for action, s in successors:
             if extractPos(s) in predecessors:
-                predecessors[s].append((action, extractPos(s)))
+                predecessors[extractPos(s)].append((action, pos))
     return predecessors
 
-def generateSuccessorState(predecessors={}, time=0, initial=False):
+def generateSuccessorState(predecessors={}, time=0):
     actions = [game.Directions.EAST,game.Directions.SOUTH,game.Directions.WEST,game.Directions.NORTH]
     t_actions = exactlyOne([logic.PropSymbolExpr(a, time-1) for a in actions])
     if time < 1:
@@ -226,16 +226,25 @@ def positionLogicPlan(problem):
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
-    t = util.manhattanDistance(problem.getStartState(), problem.getGoalState())
-
-def getActionsAndState(problem, state, actions=[], time=0):
-    expr_and_a = [(a, logic.PropSymbolExpr(a, time)) for a in problem.actions(state)]
-    actions_and_state = []
-    for i in xrange(len(expr_and_a)):
-        expr = logic.Expr("&", expr_and_a[i][1], \
-            *[logic.Expr("~", a[1]) for a in expr_and_a if a[0] != expr_and_a[i][0]])
-        actions_and_state += [(problem.result(state, expr_and_a[i][0])[0], actions + [expr])]
-    return actions_and_state
+    actions = [game.Directions.EAST,game.Directions.SOUTH,game.Directions.WEST,game.Directions.NORTH]
+    init_t = util.manhattanDistance(problem.getStartState(), problem.getGoalState())
+    goal_s = problem.getGoalState()
+    preds = getPredecessors(problem)
+    start_pos = problem.getStartState()
+    init_state = [logic.Expr("&", logic.PropSymbolExpr("P", start_pos[0],start_pos[1],0),\
+                            *[logic.Expr("~", logic.PropSymbolExpr("P", s[0],s[1],0)) for s in preds.keys() if s != start_pos])]
+    for t in xrange(init_t, 51):
+        print t
+        goal = [logic.PropSymbolExpr("P", goal_s[0], goal_s[1]), \
+                logic.Expr(">>", logic.PropSymbolExpr("P", goal_s[0], goal_s[1]),\
+                   logic.Expr("|", *[logic.PropSymbolExpr("P", goal_s[0], goal_s[1], time) for time in xrange(1,t+1)]))]
+        successors = generateSuccessorState(preds, t)
+        exps = [logic.to_cnf(s) for s in goal + successors + init_state]
+        # print goal + successors + init_state
+        model = logic.pycoSAT(exps)
+        if model:
+            return extractActionSequence(model, actions)
+    return 1/0
 
 
 def foodLogicPlan(problem):
