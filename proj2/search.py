@@ -222,7 +222,18 @@ def generateSuccessorState(predecessors={}, time=0, start=(0,0)):
             for (a, p) in preds]))) for (pos, preds) in predecessors.items()] + [logic.to_cnf(t_actions)] +\
            generateSuccessorState(predecessors,time-1)
 
+def ghost_successors(preds, ghosts, time):
+    if time <= 0:
+        return []
 
+    ghost_preds = [(g[0],g[1], preds[g[0]]) for g in ghosts]
+    # print ghost_preds
+    stuff = [logic.to_cnf(logic.Expr(">>", logic.Expr("~", logic.PropSymbolExpr("P", pos[0],pos[1],t)),\
+            logic.Expr("|", logic.Expr("&", *[logic.Expr("~", logic.PropSymbolExpr("P", p[0],p[1], t-1)) for (a,p) in ps]),\
+                       *[logic.Expr("&", logic.PropSymbolExpr("P", p[0],p[1], t-1),\
+            logic.Expr("~", logic.PropSymbolExpr(a, t-1))) for (a,p) in ps]))) for (pos,t,ps) in ghost_preds]
+    # print stuff
+    return stuff
 
 def positionLogicPlan(problem):
     """
@@ -324,10 +335,14 @@ def foodGhostLogicPlan(problem):
     init_state = [logic.Expr("&", logic.PropSymbolExpr("P", start_pos[0],start_pos[1],0),\
                 *[logic.Expr("~", logic.PropSymbolExpr("P", s[0],s[1],0)) for s in preds.keys() if s != start_pos])]
     ghost_pos_arrays = [getGhostPositionArray(problem, ghost.getPosition()) for ghost in problem.getGhostStartStates()]
+    # print ghost_pos_arrays
     for t in xrange(init_t, 51):
-        ghosts = [[logic.Expr("~",logic.PropSymbolExpr("P", g[i%len(g)][0],g[i%len(g)][1],i))\
-                   for i in xrange(t+1)] for g in ghost_pos_arrays]
-        ghosts = reduce(lambda x,y: x + y, ghosts)
+        print t
+        ghost_pos = reduce(lambda x, y: x + y, [[(g[i%len(g)],i) for i in xrange(1,t+1)] for g in ghost_pos_arrays])
+        ghosts = reduce(lambda x,y: x + y, [[logic.Expr("~",logic.PropSymbolExpr("P", g[i%len(g)][0],g[i%len(g)][1],i))\
+                   for i in xrange(t+1)] for g in ghost_pos_arrays])
+        ghosts = ghosts + ghost_successors(preds, ghost_pos, t)
+        # print ghosts
         goal_list = []
         for food in food_list: # food is an (x, y) coordinate
             goal_list.append([logic.PropSymbolExpr("P", food[0], food[1]), \
