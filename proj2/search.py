@@ -209,10 +209,13 @@ def getPredecessors(problem, extractPos=lambda x: x[0], generateState=lambda x: 
 
 def generateSuccessorState(predecessors={}, time=0, start=(0,0)):
     actions = [game.Directions.EAST,game.Directions.SOUTH,game.Directions.WEST,game.Directions.NORTH]
+
+    # this is a list of all possible actions, exactlyOne forces us to pick one of them
     t_actions = exactlyOne([logic.PropSymbolExpr(a, time-1) for a in actions])
+
     if time <= 0:
         return []
-    
+
     return [exactlyOne([logic.PropSymbolExpr("P",pos[0],pos[1],time) for pos in predecessors.keys()])] +\
            [logic.to_cnf(logic.Expr(">>", logic.PropSymbolExpr("P",pos[0],pos[1],time), \
             exactlyOne([logic.Expr("&", logic.PropSymbolExpr(a, time-1), logic.PropSymbolExpr("P",p[0],p[1],time-1))\
@@ -253,7 +256,44 @@ def foodLogicPlan(problem):
     Available actions are game.Directions.{NORTH,SOUTH,EAST,WEST}
     Note that STOP is not an available action.
     """
-    pass
+    # need a list where all the food is
+    # go through with the logic phrase, for each food make sure at some time step t I will be there
+
+    actions = [game.Directions.EAST,game.Directions.SOUTH,game.Directions.WEST,game.Directions.NORTH]
+
+    # this is my food grid as a list [(x,y), (x,y) ...]
+    food_list = problem.getStartState()[1].asList()
+
+    # this is a list of the distances from my start state to each food on the grid
+    manhattan_food_distances = [util.manhattanDistance(problem.getStartState()[0], food) for food in food_list]
+
+    # for the predecessors function
+    extractState = lambda x: x[0][0]
+    generateState = lambda x: (x, problem.getStartState()[1])
+
+    # return the food that is furthest away
+    init_t = max(manhattan_food_distances)
+
+    preds = getPredecessors(problem, extractState, generateState)
+    start_pos = problem.getStartState()[0]
+    init_state = [logic.Expr("&", logic.PropSymbolExpr("P", start_pos[0],start_pos[1],0),\
+                *[logic.Expr("~", logic.PropSymbolExpr("P", s[0],s[1],0)) for s in preds.keys() if s != start_pos])]
+
+    for t in xrange(init_t, 51):
+        goal_list = []
+        for food in food_list: # food is an (x, y) coordinate
+            goal_list.append([logic.PropSymbolExpr("P", food[0], food[1]), \
+                logic.to_cnf(logic.Expr(">>", logic.PropSymbolExpr("P", food[0], food[1]),\
+               logic.Expr("|", *[logic.PropSymbolExpr("P", food[0], food[1], time) for time in xrange(1,t+1)])))])
+        successors = generateSuccessorState(preds, t, start_pos)
+
+        # makes goal_list a list, previously was a list of lists
+        goal_list = reduce(lambda x,y: x+y, goal_list)
+        exps = goal_list + successors + init_state
+        model = logic.pycoSAT(exps)
+        if model:
+            return extractActionSequence(model, actions)
+    return []
 
 def foodGhostLogicPlan(problem):
     """
