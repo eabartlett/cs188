@@ -337,12 +337,12 @@ def foodGhostLogicPlan(problem):
     ghost_pos_arrays = [getGhostPositionArray(problem, ghost.getPosition()) for ghost in problem.getGhostStartStates()]
     # print ghost_pos_arrays
     for t in xrange(init_t, 51):
-        print t
-        ghost_pos = reduce(lambda x, y: x + y, [[(g[i%len(g)],i) for i in xrange(1,t+1)] for g in ghost_pos_arrays])
-        ghosts = reduce(lambda x,y: x + y, [[logic.Expr("~",logic.PropSymbolExpr("P", g[i%len(g)][0],g[i%len(g)][1],i))\
-                   for i in xrange(t+1)] for g in ghost_pos_arrays])
-        ghosts = ghosts + ghost_successors(preds, ghost_pos, t)
-        # print ghosts
+        # print t
+        # ghost_pos = reduce(lambda x, y: x + y, [[(g[i%len(g)],i) for i in xrange(1,t+1)] for g in ghost_pos_arrays])
+        ghosts = reduce(lambda x,y: x + y, [[[~logic.PropSymbolExpr("P", g[i%len(g)][0],g[i%len(g)][1],i)\
+                   ,~logic.PropSymbolExpr("P", g[i%len(g)][0],g[i%len(g)][1],i+1)]\
+                             for i in xrange(t+1)] for g in ghost_pos_arrays])
+        ghosts = reduce(lambda x,y: x + y,ghosts)# + ghost_successors(preds, ghost_pos, t)
         goal_list = []
         for food in food_list: # food is an (x, y) coordinate
             goal_list.append([logic.PropSymbolExpr("P", food[0], food[1]), \
