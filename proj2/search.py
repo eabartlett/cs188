@@ -252,7 +252,7 @@ def positionLogicPlan(problem):
         goal = [logic.PropSymbolExpr("P", goal_s[0], goal_s[1]), \
                 logic.to_cnf(logic.Expr(">>", logic.PropSymbolExpr("P", goal_s[0], goal_s[1]),\
                logic.Expr("|", *[logic.PropSymbolExpr("P", goal_s[0], goal_s[1], time) for time in xrange(1,t+1)])))]
-        successors = generateSuccessorState(preds, t, start_pos)
+        successors = generateSuccessorState(preds, t)
         exps = goal + successors + init_state
         model = logic.pycoSAT(exps)
         if model:
@@ -296,7 +296,7 @@ def foodLogicPlan(problem):
             goal_list.append([logic.PropSymbolExpr("P", food[0], food[1]), \
                 logic.to_cnf(logic.Expr(">>", logic.PropSymbolExpr("P", food[0], food[1]),\
                logic.Expr("|", *[logic.PropSymbolExpr("P", food[0], food[1], time) for time in xrange(1,t+1)])))])
-        successors = generateSuccessorState(preds, t, start_pos)
+        successors = generateSuccessorState(preds, t)
 
         # makes goal_list a list, previously was a list of lists
         goal_list = reduce(lambda x,y: x+y, goal_list)
