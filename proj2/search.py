@@ -207,7 +207,7 @@ def getPredecessors(problem, extractPos=lambda x: x[0], generateState=lambda x: 
                 predecessors[extractPos(s)].append((action, pos))
     return predecessors
 
-def generateSuccessorState(predecessors={}, time=0, start=(0,0)):
+def generateSuccessorState(predecessors={}, time=0):
     actions = [game.Directions.EAST,game.Directions.SOUTH,game.Directions.WEST,game.Directions.NORTH]
 
     # this is a list of all possible actions, exactlyOne forces us to pick one of them
@@ -339,16 +339,16 @@ def foodGhostLogicPlan(problem):
     for t in xrange(init_t, 51):
         # print t
         # ghost_pos = reduce(lambda x, y: x + y, [[(g[i%len(g)],i) for i in xrange(1,t+1)] for g in ghost_pos_arrays])
-        ghosts = reduce(lambda x,y: x + y, [[[~logic.PropSymbolExpr("P", g[i%len(g)][0],g[i%len(g)][1],i)\
-                   ,~logic.PropSymbolExpr("P", g[i%len(g)][0],g[i%len(g)][1],i+1)]\
+        ghosts = reduce(lambda x,y: x + y, [[[~logic.PropSymbolExpr("P", g[i%len(g)][0],g[i%len(g)][1],i+1)\
+                   ,~logic.PropSymbolExpr("P", g[i%len(g)][0],g[i%len(g)][1],i)]\
                              for i in xrange(t+1)] for g in ghost_pos_arrays])
         ghosts = reduce(lambda x,y: x + y,ghosts)# + ghost_successors(preds, ghost_pos, t)
         goal_list = []
         for food in food_list: # food is an (x, y) coordinate
             goal_list.append([logic.PropSymbolExpr("P", food[0], food[1]), \
                 logic.to_cnf(logic.Expr(">>", logic.PropSymbolExpr("P", food[0], food[1]),\
-               logic.Expr("|", *[logic.PropSymbolExpr("P", food[0], food[1], time) for time in xrange(1,t+1)])))])
-        successors = generateSuccessorState(preds, t, start_pos)
+               logic.Expr("|", *[logic.PropSymbolExpr("P", food[0], food[1], time) for time in xrange(t+1)])))])
+        successors = generateSuccessorState(preds, t)
 
         # makes goal_list a list, previously was a list of lists
         goal_list = reduce(lambda x,y: x+y, goal_list)
@@ -367,10 +367,10 @@ def getGhostPositionArray(foodGhostProblem, startPos):
     while not foodGhostProblem.isWall((x-1, y)):
         x -= 1
         pos_arr.append((x,y))
-    while x + 1 < startPos[0]:
+    while (x + 1) < startPos[0] and x != startPos[0]:
         x += 1
         pos_arr.append((x,y))
-
+    pos_arr = pos_arr if pos_arr[-1] != startPos else pos_arr[:len(pos_arr)-1]
     return pos_arr
 
 
