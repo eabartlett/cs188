@@ -261,8 +261,9 @@ class ParticleFilter(InferenceModule):
         weight with each position) is incorrect and may produce errors.
         """
         self.particles = list()
-        for pos in self.legalPositions:
-            self.particles.append(pos)
+        for i in xrange(self.numParticles):
+            self.particles.append(self.legalPositions[i%len(self.legalPositions)])
+        assert(len(self.particles) == self.numParticles)
 
     def observe(self, observation, gameState):
         """
@@ -296,9 +297,8 @@ class ParticleFilter(InferenceModule):
         pacmanPosition = gameState.getPacmanPosition()
 
         if self.beliefs.totalCount() == 0:
-            particles = list()
-            particles.initializeUniformly(gameState)
-            beliefs = particles.getBeliefDistribution()
+            self.initializeUniformly(gameState)
+            self.getBeliefDistribution()
 
         allPossible = util.Counter()
 
@@ -306,13 +306,18 @@ class ParticleFilter(InferenceModule):
             for p in self.legalPositions:
                 trueDistance = util.manhattanDistance(p, pacmanPosition)
                 if emissionModel[trueDistance] > 0:
-                    allPossible[p] = emissionModel[trueDistance] * self.beliefs[p]
+                    allPossible[p] += emissionModel[trueDistance] * self.beliefs[p]
         else:
             for p in self.legalPositions:
                 allPossible[p] = 0
             allPossible[self.getJailPosition()] = 1
 
         allPossible.normalize()
+
+        self.particles = list()
+        for i in self.legalPositions:
+            self.particles += [i for i in xrange(int(allPossible[i]*self.numParticles))]
+
         self.beliefs = allPossible
 
 
