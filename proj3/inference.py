@@ -296,9 +296,6 @@ class ParticleFilter(InferenceModule):
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
 
-        if self.beliefs.totalCount() == 0:
-            self.initializeUniformly(gameState)
-            self.getBeliefDistribution()
 
         allPossible = util.Counter()
 
@@ -313,12 +310,13 @@ class ParticleFilter(InferenceModule):
             allPossible[self.getJailPosition()] = 1
 
         allPossible.normalize()
-
-        self.particles = list()
-        for i in self.legalPositions:
-            self.particles += [i for j in xrange(int(allPossible[i]*self.numParticles))]
-
         self.beliefs = allPossible
+        
+        if self.beliefs.totalCount() == 0:
+            self.initializeUniformly(gameState)
+            self.getBeliefDistribution()
+
+        self.particles = [util.sampleFromCounter(self.beliefs) for i in xrange(self.numParticles)]
 
 
     def elapseTime(self, gameState):
@@ -343,6 +341,7 @@ class ParticleFilter(InferenceModule):
                 possiblePositions[pd] += self.beliefs[p] * newPosDist[pd]
 
         self.beliefs = possiblePositions
+        self.particles = [util.sampleFromCounter(possiblePositions) for i in xrange(self.numParticles)]
 
     def getBeliefDistribution(self):
         """
