@@ -316,7 +316,7 @@ class ParticleFilter(InferenceModule):
 
         self.particles = list()
         for i in self.legalPositions:
-            self.particles += [i for i in xrange(int(allPossible[i]*self.numParticles))]
+            self.particles += [i for j in xrange(int(allPossible[i]*self.numParticles))]
 
         self.beliefs = allPossible
 
