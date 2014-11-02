@@ -260,7 +260,9 @@ class ParticleFilter(InferenceModule):
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        "*** YOUR CODE HERE ***"
+        self.particles = list()
+        for pos in self.legalPositions:
+            self.particles.append(pos)
 
     def observe(self, observation, gameState):
         """
@@ -292,8 +294,27 @@ class ParticleFilter(InferenceModule):
         noisyDistance = observation
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        if self.beliefs.totalCount() == 0:
+            particles = list()
+            particles.initializeUniformly(gameState)
+            beliefs = particles.getBeliefDistribution()
+
+        allPossible = util.Counter()
+
+        if noisyDistance != None:
+            for p in self.legalPositions:
+                trueDistance = util.manhattanDistance(p, pacmanPosition)
+                if emissionModel[trueDistance] > 0:
+                    allPossible[p] = emissionModel[trueDistance] * self.beliefs[p]
+        else:
+            for p in self.legalPositions:
+                allPossible[p] = 0
+            allPossible[self.getJailPosition()] = 1
+
+        allPossible.normalize()
+        self.beliefs = allPossible
+
 
     def elapseTime(self, gameState):
         """
@@ -319,8 +340,14 @@ class ParticleFilter(InferenceModule):
         essentially converts a list of particles into a belief distribution (a
         Counter object)
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        self.beliefs = util.Counter()
+
+        # the value for a key will be the number of times that position occurs in particles list
+        for pos in self.particles:
+            self.beliefs[pos] += 1
+
+        self.beliefs.normalize()
+        return self.beliefs
 
 class MarginalInference(InferenceModule):
     """
