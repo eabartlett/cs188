@@ -217,8 +217,16 @@ class ExactInference(InferenceModule):
         are used and how they combine to give us a belief distribution over new
         positions after a time update from a particular position.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        possiblePositions = util.Counter()
+
+        for p in self.legalPositions:
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, p))
+            for pd in self.legalPositions:
+                possiblePositions[pd] += self.beliefs[p] * newPosDist[pd]
+
+        self.beliefs = possiblePositions
+
 
     def getBeliefDistribution(self):
         return self.beliefs
