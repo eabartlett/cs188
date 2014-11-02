@@ -311,7 +311,6 @@ class ParticleFilter(InferenceModule):
 
         allPossible.normalize()
         self.beliefs = allPossible
-        
         if self.beliefs.totalCount() == 0:
             self.initializeUniformly(gameState)
             self.getBeliefDistribution()
@@ -341,7 +340,11 @@ class ParticleFilter(InferenceModule):
                 possiblePositions[pd] += self.beliefs[p] * newPosDist[pd]
 
         self.beliefs = possiblePositions
-        self.particles = [util.sampleFromCounter(possiblePositions) for i in xrange(self.numParticles)]
+        if self.beliefs.totalCount() == 0:
+            self.initializeUniformly(gameState)
+            self.getBeliefDistribution()
+            
+        self.particles = [util.sampleFromCounter(self.beliefs) for i in xrange(self.numParticles)]
 
     def getBeliefDistribution(self):
         """
