@@ -315,7 +315,7 @@ class ParticleFilter(InferenceModule):
             self.initializeUniformly(gameState)
             self.getBeliefDistribution()
 
-        self.particles = [util.sampleFromCounter(self.beliefs) for i in xrange(self.numParticles)]
+        self.particles = nSampleFromCounter(self.beliefs, self.numParticles)
 
 
     def elapseTime(self, gameState):
@@ -344,7 +344,7 @@ class ParticleFilter(InferenceModule):
             self.initializeUniformly(gameState)
             self.getBeliefDistribution()
 
-        self.particles = [util.sampleFromCounter(self.beliefs) for i in xrange(self.numParticles)]
+        self.particles = nSampleFromCounter(self.beliefs, self.numParticles)
 
     def getBeliefDistribution(self):
         """
@@ -436,7 +436,7 @@ class JointParticleFilter:
             particles_list = self.legalPositions
             for i in xrange(self.numGhosts-1):
                 particles_list = list(itertools.product(particles_list, self.legalPositions))
-
+        random.shuffle(particles_list)
         for i in xrange(self.numParticles):
             self.particles.append(particles_list[i%len(particles_list)])
 
@@ -502,7 +502,7 @@ class JointParticleFilter:
                 for p in self.legalPositions:
                     trueDistance = util.manhattanDistance(p, pacmanPosition)
                     if model[trueDistance] > 0:
-                        allPossible[i][p] += model[trueDistance]
+                        allPossible[i][p] = model[trueDistance]
             else:
                 for p in self.legalPositions:
                     allPossible[i][p] = 0
@@ -520,8 +520,15 @@ class JointParticleFilter:
             self.initializeParticles()
             next_dist = self.getBeliefDistribution()
 
-        self.particles = [util.sampleFromCounter(next_dist) for i in xrange(self.numParticles)]
-        print self.getBeliefDistribution()
+        self.particles = nSampleFromCounter(next_dist, self.numParticles)
+        temp = []
+        for p in self.particles:
+            new_p = p
+            for i, dist in enumerate(noisyDistances):
+                if dist == None:
+                    new_p = self.getParticleWithGhostInJail(new_p, i)
+            temp.append(new_p)
+        self.particles = temp
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
@@ -619,3 +626,6 @@ def setGhostPositions(gameState, ghostPositions):
         gameState.data.agentStates[index + 1] = game.AgentState(conf, False)
     return gameState
 
+def nSampleFromCounter(ctr, n):
+    items = sorted(ctr.items())
+    return util.nSample([v for k,v in items], [k for k,v in items], n)
