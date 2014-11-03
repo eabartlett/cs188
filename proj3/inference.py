@@ -480,6 +480,9 @@ class JointParticleFilter:
         a list, edited, and then converted back to a tuple. This is a common
         operation when placing a ghost in jail.
         """
+        def mul(*args):
+            return reduce(lambda x,y: x * y, args)
+
         pacmanPosition = gameState.getPacmanPosition()
         noisyDistances = gameState.getNoisyGhostDistances()
         if len(noisyDistances) < self.numGhosts:
@@ -487,27 +490,38 @@ class JointParticleFilter:
         emissionModels = [busters.getObservationDistribution(dist) for dist in noisyDistances]
 
         current = self.getBeliefDistribution()
+        next_dist = util.Counter()
+
         if current.totalCount() == 0:
             self.initializeParticles()
             current = self.getBeliefDistribution()
-        print current.items()
 
-        allPossible = util.Counter()
+        allPossible = [util.Counter() for i in xrange(self.numGhosts)]
         for i, model in enumerate(emissionModels):
             if noisyDistances[i] != None:
                 for p in self.legalPositions:
                     trueDistance = util.manhattanDistance(p, pacmanPosition)
-                    print model[trueDistance]
                     if model[trueDistance] > 0:
-                        allPossible[p] += model[trueDistance] * current[p]
+                        allPossible[i][p] += model[trueDistance]
             else:
-                allPossible[self.getJailPosition(i)] += 1
-        print allPossible.items()
-        allPossible.normalize()
-        if allPossible.totalCount() == 0:
+                for p in self.legalPositions:
+                    allPossible[i][p] = 0
+                allPossible[i][self.getJailPosition(i)] = 1
+
+        for counter in allPossible:
+            counter.normalize()
+
+        for p in current.keys():
+            next_dist[p] = current[p] * mul(*[allPossible[i][pos] for i, pos in enumerate(p)])
+
+        next_dist.normalize()
+
+        if next_dist.totalCount() == 0:
             self.initializeParticles()
-            allPossible = self.getBeliefDistribution()
-        self.particles = [util.sampleFromCounter(allPossible) for i in xrange(self.numParticles)]
+            next_dist = self.getBeliefDistribution()
+
+        self.particles = [util.sampleFromCounter(next_dist) for i in xrange(self.numParticles)]
+        print self.getBeliefDistribution()
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
