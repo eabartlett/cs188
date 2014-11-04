@@ -510,25 +510,28 @@ class JointParticleFilter:
 
         for counter in allPossible:
             counter.normalize()
+            
+        n_d2 = util.Counter()
+        for k, v in current.items():
+            p = k
+            for i, dist in enumerate(noisyDistances):
+                if dist == None:
+                    p = self.getParticleWithGhostInJail(p, i)
+            n_d2[p] += v
+
+        current = n_d2
 
         for p in current.keys():
             next_dist[p] = current[p] * mul(*[allPossible[i][pos] for i, pos in enumerate(p)])
 
-        next_dist.normalize()
 
+        next_dist.normalize()
         if next_dist.totalCount() == 0:
             self.initializeParticles()
             next_dist = self.getBeliefDistribution()
 
         self.particles = nSampleFromCounter(next_dist, self.numParticles)
-        temp = []
-        for p in self.particles:
-            new_p = p
-            for i, dist in enumerate(noisyDistances):
-                if dist == None:
-                    new_p = self.getParticleWithGhostInJail(new_p, i)
-            temp.append(new_p)
-        self.particles = temp
+
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
