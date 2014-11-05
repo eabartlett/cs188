@@ -408,7 +408,17 @@ class JointParticleFilter:
         self.numGhosts = gameState.getNumAgents() - 1
         self.ghostAgents = []
         self.legalPositions = legalPositions
+        self.particles_list = []
+        # all possible particles
+        if self.numGhosts > 0:
+            self.particles_list = self.legalPositions
+            for i in xrange(self.numGhosts-1):
+                self.particles_list = list(itertools.product(self.particles_list, self.legalPositions))
+
         self.initializeParticles()
+
+
+
 
     def initializeParticles(self):
         """
@@ -432,13 +442,9 @@ class JointParticleFilter:
         weight with each position) is incorrect and may produce errors.
         """
         self.particles = []
-        if self.numGhosts > 0:
-            particles_list = self.legalPositions
-            for i in xrange(self.numGhosts-1):
-                particles_list = list(itertools.product(particles_list, self.legalPositions))
-        random.shuffle(particles_list)
+        random.shuffle(self.particles_list)
         for i in xrange(self.numParticles):
-            self.particles.append(particles_list[i%len(particles_list)])
+            self.particles.append(self.particles_list[i%len(self.particles_list)])
 
 
     def addGhostAgent(self, agent):
@@ -480,8 +486,6 @@ class JointParticleFilter:
         a list, edited, and then converted back to a tuple. This is a common
         operation when placing a ghost in jail.
         """
-        def mul(*args):
-            return reduce(lambda x,y: x * y, args)
 
         pacmanPosition = gameState.getPacmanPosition()
         noisyDistances = gameState.getNoisyGhostDistances()
@@ -510,16 +514,16 @@ class JointParticleFilter:
 
         for counter in allPossible:
             counter.normalize()
-            
-        n_d2 = util.Counter()
+
+        temp = util.Counter()
         for k, v in current.items():
             p = k
             for i, dist in enumerate(noisyDistances):
                 if dist == None:
                     p = self.getParticleWithGhostInJail(p, i)
-            n_d2[p] += v
+            temp[p] += v
 
-        current = n_d2
+        current = temp
 
         for p in current.keys():
             next_dist[p] = current[p] * mul(*[allPossible[i][pos] for i, pos in enumerate(p)])
@@ -586,16 +590,19 @@ class JointParticleFilter:
               self.ghostAgents[ghostIndex-1], but in this project all ghost
               agents are always the same.
         """
-        newParticles = []
-        for oldParticle in self.particles:
-            newParticle = list(oldParticle) # A list of ghost positions
-            # now loop through and update each entry in newParticle...
 
-            "*** YOUR CODE HERE ***"
+        current = self.getBeliefDistribution()
+        new = util.Counter()
 
-            "*** END YOUR CODE HERE ***"
-            newParticles.append(tuple(newParticle))
-        self.particles = newParticles
+        for p_s, prob in current.items():
+            newDists = [getPositionDistributionForGhost( \
+             setGhostPositions(gameState, list(p_s)), i, self.ghostAgents[i]) for i in xrange(self.numGhosts)]
+            for particle in self.particles_list:
+                new[particle] += prob * mul(*[newDists[i][p] for i,p in enumerate(particle)])
+
+        new.normalize()
+        self.particles = nSampleFromCounter(new, self.numParticles)
+
 
     def getBeliefDistribution(self):
         dist = util.Counter()
@@ -629,6 +636,10 @@ def setGhostPositions(gameState, ghostPositions):
         gameState.data.agentStates[index + 1] = game.AgentState(conf, False)
     return gameState
 
+# helper functions
 def nSampleFromCounter(ctr, n):
     items = sorted(ctr.items())
     return util.nSample([v for k,v in items], [k for k,v in items], n)
+
+def mul(*args):
+            return reduce(lambda x,y: x * y, args)
