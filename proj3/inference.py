@@ -597,8 +597,9 @@ class JointParticleFilter:
         for p_s, prob in current.items():
             newDists = [getPositionDistributionForGhost( \
              setGhostPositions(gameState, list(p_s)), i, self.ghostAgents[i]) for i in xrange(self.numGhosts)]
-            for particle in self.particles_list:
-                new[particle] += prob * mul(*[newDists[i][p] for i,p in enumerate(particle)])
+            if prob > 0:
+                for particle in self.particles_list:
+                    new[particle] += prob * mul(*[newDists[i][p] for i,p in enumerate(particle)])
 
         new.normalize()
         self.particles = nSampleFromCounter(new, self.numParticles)
