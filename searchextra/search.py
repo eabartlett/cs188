@@ -101,8 +101,6 @@ def breadthFirstSearch(problem):
                     frontier.push((children[0], actionsList + [children[1]]))
     return []
 
-    util.raiseNotDefined()
-
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
