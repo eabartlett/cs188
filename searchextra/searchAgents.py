@@ -352,7 +352,16 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # for i,j in food.asList():
+        #     distances.append((util.manhattanDistance((i,j),startPosition), (i,j)))
+        #
+        # closestFoodPosition = min(distances, key=lambda x:x[0])[1]
+
+        # append actions to list actions to get to closestFoodPosition
+        problem = AnyFoodSearchProblem(gameState)
+        actions = search.breadthFirstSearch(problem)
+
+        return actions
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -388,7 +397,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return state in self.food.asList()
 
 ##################
 # Mini-contest 1 #
@@ -408,7 +417,9 @@ class ApproximateSearchAgent(Agent):
         Directions.{North, South, East, West, Stop}
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        problem = AnyFoodSearchProblem(state)
+        actions = search.breadthFirstSearch(problem)
+        return actions[0]
 
 def mazeDistance(point1, point2, gameState):
     """
