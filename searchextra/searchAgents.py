@@ -378,11 +378,11 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     method.
     """
 
-    def __init__(self, gameState):
+    def __init__(self, gameState, goal):
         "Stores information from the gameState.  You don't need to change this."
         # Store the food for later reference
         self.food = gameState.getFood()
-
+        self.goal = goal
         # Store info for the PositionSearchProblem (no need to change this)
         self.walls = gameState.getWalls()
         self.startState = gameState.getPacmanPosition()
@@ -394,10 +394,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         The state is Pacman's position. Fill this in with a goal test that will
         complete the problem definition.
         """
-        x,y = state
-
-        "*** YOUR CODE HERE ***"
-        return state in self.food.asList()
+        return state == self.goal
 
 ##################
 # Mini-contest 1 #
@@ -416,10 +413,45 @@ class ApproximateSearchAgent(Agent):
         The Agent will receive a GameState and must return an action from
         Directions.{North, South, East, West, Stop}
         """
-        "*** YOUR CODE HERE ***"
-        problem = AnyFoodSearchProblem(state)
+        food_distances = [(util.manhattanDistance(f, state.getPacmanPosition()), f) for f in state.getFood().asList()]
+        dist = 7
+        close_food = []
+        while food_distances:
+            close_food = [f[1] for f in food_distances if f[0] <= dist]
+            if not close_food:
+                dist += 1
+                continue
+            break
+        two_opt_positions = self.optimalTwoOpt(close_food, state)
+        problem = AnyFoodSearchProblem(state, two_opt_positions[0])
         actions = search.breadthFirstSearch(problem)
+        print two_opt_positions[0], problem, actions
         return actions[0]
+
+    def distanceOfPositions(self, positions, state):
+        distances = [util.manhattanDistance(state.getPacmanPosition(), positions[0])]
+        for i in xrange(1, len(positions)):
+            distances.append(util.manhattanDistance(positions[i-1], positions[i]))
+        return sum(distances)
+
+    def optimalTwoOpt(self, positions, state):
+        j = 0
+        while j < 50:
+            j += 1
+            best_distance = self.distanceOfPositions(positions, state)
+            for i in xrange(len(positions)-1):
+                for k in xrange(i+1, len(positions)):
+                   new_route = self.twoOptSwap(positions, i, k)
+                   new_distance = self.distanceOfPositions(new_route, state)
+                   if (new_distance < best_distance):
+                       positions = new_route
+                       break
+                if best_distance > self.distanceOfPositions(positions, state):
+                    break
+        return positions
+
+    def twoOptSwap(self, positions, i, k):
+        return positions[:i] + positions[i:k:-1] + positions[k:]
 
 def mazeDistance(point1, point2, gameState):
     """
