@@ -351,13 +351,6 @@ class ClosestDotSearchAgent(SearchAgent):
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
 
-        "*** YOUR CODE HERE ***"
-        # for i,j in food.asList():
-        #     distances.append((util.manhattanDistance((i,j),startPosition), (i,j)))
-        #
-        # closestFoodPosition = min(distances, key=lambda x:x[0])[1]
-
-        # append actions to list actions to get to closestFoodPosition
         problem = AnyFoodSearchProblem(gameState)
         actions = search.breadthFirstSearch(problem)
 
@@ -405,7 +398,7 @@ class ApproximateSearchAgent(Agent):
 
     def registerInitialState(self, state):
         "This method is called before any moves are made."
-        "*** YOUR CODE HERE ***"
+        self.actions = []
 
     def getAction(self, state):
         """
@@ -413,20 +406,21 @@ class ApproximateSearchAgent(Agent):
         The Agent will receive a GameState and must return an action from
         Directions.{North, South, East, West, Stop}
         """
-        food_distances = [(util.manhattanDistance(f, state.getPacmanPosition()), f) for f in state.getFood().asList()]
-        dist = 7
-        close_food = []
-        while food_distances:
-            close_food = [f[1] for f in food_distances if f[0] <= dist]
-            if not close_food:
-                dist += 1
-                continue
-            break
-        two_opt_positions = self.optimalTwoOpt(close_food, state)
-        problem = AnyFoodSearchProblem(state, two_opt_positions[0])
-        actions = search.breadthFirstSearch(problem)
-        print two_opt_positions[0], problem, actions
-        return actions[0]
+        if not self.actions:
+            food_distances = [(util.manhattanDistance(f, state.getPacmanPosition()), f) for f in state.getFood().asList()]
+            dist = 1
+            close_food = []
+            while food_distances:
+                close_food = [f[1] for f in food_distances if f[0] <= dist]
+                if len(close_food) < 1:
+                    dist += 1
+                    continue
+                break
+            two_opt_positions = self.optimalTwoOpt(close_food, state)
+            problem = AnyFoodSearchProblem(state, two_opt_positions[0])
+            self.actions = search.breadthFirstSearch(problem)
+            # print two_opt_positions[0], problem, actions
+        return self.actions.pop(0)
 
     def distanceOfPositions(self, positions, state):
         distances = [util.manhattanDistance(state.getPacmanPosition(), positions[0])]
@@ -436,7 +430,7 @@ class ApproximateSearchAgent(Agent):
 
     def optimalTwoOpt(self, positions, state):
         j = 0
-        while j < 50:
+        while j < 3000:
             j += 1
             best_distance = self.distanceOfPositions(positions, state)
             for i in xrange(len(positions)-1):
@@ -469,5 +463,7 @@ def mazeDistance(point1, point2, gameState):
     assert not walls[x1][y1], 'point1 is a wall: ' + point1
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False)
-    return len(search.bfs(prob))
+    l = len(search.breadthFirstSearch(prob))
+    print l
+    return l
 
