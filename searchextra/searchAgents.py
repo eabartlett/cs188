@@ -389,6 +389,42 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         """
         return state == self.goal
 
+class ClosestFoodSearchProblem(PositionSearchProblem):
+    """
+    A search problem for finding a path to any food.
+
+    This search problem is just like the PositionSearchProblem, but has a
+    different goal test, which you need to fill in below.  The state space and
+    successor function do not need to be changed.
+
+    The class definition above, AnyFoodSearchProblem(PositionSearchProblem),
+    inherits the methods of the PositionSearchProblem.
+
+    You can use this search problem to help you fill in the findPathToClosestDot
+    method.
+    """
+
+    def __init__(self, gameState, goal):
+        "Stores information from the gameState.  You don't need to change this."
+        # Store the food for later reference
+        self.food = gameState.getFood()
+        self.goal = goal
+        self.eaten_food = []
+        # Store info for the PositionSearchProblem (no need to change this)
+        self.walls = gameState.getWalls()
+        self.startState = gameState.getPacmanPosition()
+        self.costFn = lambda x: 1
+        self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
+
+    def isGoalState(self, state):
+        """
+        The state is Pacman's position. Fill this in with a goal test that will
+        complete the problem definition.
+        """
+        if state in self.food.asList():
+            self.eaten_food.append(state)
+        return len(self.eaten_food) == self.goal
+
 ##################
 # Mini-contest 1 #
 ##################
@@ -399,6 +435,7 @@ class ApproximateSearchAgent(Agent):
     def registerInitialState(self, state):
         "This method is called before any moves are made."
         self.actions = []
+        self.food = []
 
     def getAction(self, state):
         """
@@ -406,21 +443,28 @@ class ApproximateSearchAgent(Agent):
         The Agent will receive a GameState and must return an action from
         Directions.{North, South, East, West, Stop}
         """
+        if not self.food or len(self.food) < 3:
+            self.getNewFood(state)
         if not self.actions:
-            food_distances = [(util.manhattanDistance(f, state.getPacmanPosition()), f) for f in state.getFood().asList()]
-            dist = 1
-            close_food = []
-            while food_distances:
-                close_food = [f[1] for f in food_distances if f[0] <= dist]
-                if len(close_food) < 1:
-                    dist += 1
-                    continue
-                break
-            two_opt_positions = self.optimalTwoOpt(close_food, state)
-            problem = AnyFoodSearchProblem(state, two_opt_positions[0])
+            problem = AnyFoodSearchProblem(state, self.food.pop(0))
+            result = search.breadthFirstSearch(problem)
+            if not result:
+                self.getNewFood(state)
+                problem = AnyFoodSearchProblem(state, self.food.pop(0))
             self.actions = search.breadthFirstSearch(problem)
-            # print two_opt_positions[0], problem, actions
         return self.actions.pop(0)
+
+    def getNewFood(self, state):
+        food_distances = [(util.manhattanDistance(f, state.getPacmanPosition()), f) for f in state.getFood().asList()]
+        dist = 10
+        min_food = 4
+        while food_distances:
+            close_food = [f[1] for f in food_distances if f[0] <= dist or min_food >= len(state.getFood().asList())]
+            if len(close_food) < min_food and min_food < len(state.getFood().asList()):
+                dist += 1
+                continue
+            self.food = self.optimalTwoOpt(close_food, state)
+            break
 
     def distanceOfPositions(self, positions, state):
         distances = [util.manhattanDistance(state.getPacmanPosition(), positions[0])]

@@ -42,9 +42,18 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.discount = discount
         self.iterations = iterations
         self.values = util.Counter() # A Counter is a dict with default 0
-
+        for state in self.mdp.getStates():
+            self.values[state] = 0
         # Write value iteration code here
-        "*** YOUR CODE HERE ***"
+        for i in xrange(self.iterations):
+            next_counter = util.Counter()
+            for key in self.values.keys():
+                if not self.mdp.isTerminal(key):
+                    next_counter[key] = max(\
+                        [sum([t * (self.mdp.getReward(key, a, s_prime) + self.discount * self.getValue(s_prime))\
+                              for s_prime, t in self.mdp.getTransitionStatesAndProbs(key, a)])\
+                        for a in self.mdp.getPossibleActions(key)])
+            self.values = next_counter
 
 
     def getValue(self, state):
@@ -59,8 +68,8 @@ class ValueIterationAgent(ValueEstimationAgent):
           Compute the Q-value of action in state from the
           value function stored in self.values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return sum([t * (self.mdp.getReward(state, action, s_prime) + self.discount * self.getValue(s_prime)) \
+                    for s_prime, t in self.mdp.getTransitionStatesAndProbs(state, action)])
 
     def computeActionFromValues(self, state):
         """
@@ -71,8 +80,10 @@ class ValueIterationAgent(ValueEstimationAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return None.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        actions = self.mdp.getPossibleActions(state)
+        action_vals = [(a, self.computeQValueFromValues(state, a)) for a in actions]
+        if action_vals:
+            return max(action_vals, key = lambda x: x[1])[0]
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
