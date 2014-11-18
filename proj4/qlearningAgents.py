@@ -43,6 +43,8 @@ class QLearningAgent(ReinforcementAgent):
         ReinforcementAgent.__init__(self, **args)
 
         self.q_values = util.Counter()
+        self.times = 0
+        self.random = 0
 
     def getQValue(self, state, action):
         """
@@ -100,13 +102,17 @@ class QLearningAgent(ReinforcementAgent):
           HINT: To pick randomly from a list, use random.choice(list)
         """
         # Pick Action
+        self.times += 1
         legalActions = self.getLegalActions(state)
         action = None
         if legalActions:
-            action = max([self.getQValue(state, a) for a in legalActions])
-            if util.flipCoin(self.epsilon):
-                action = random.choice(legalActions)
+            action = random.choice(legalActions)
+            if  util.flipCoin(self.epsilon):
+                self.random += 1
+                action = max([self.getQValue(state, a) for a in legalActions])
 
+        if self.random:
+            print float(self.random)/float(self.times)
         return action
 
     def update(self, state, action, nextState, reward):
