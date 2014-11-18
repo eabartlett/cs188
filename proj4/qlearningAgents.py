@@ -76,10 +76,14 @@ class QLearningAgent(ReinforcementAgent):
           Compute the best action to take in a state.  Note that if there
           are no legal actions, which is the case at the terminal state,
           you should return None.
+
+          def lam(action):
+            return self.getQValue(state, action)
         """
+
         legalActions = self.getLegalActions(state)
         if legalActions:
-            return max([self.getQValue(state, a) for a in legalActions])
+            return max(legalActions, key = lambda a: self.getQValue(state, a))
         return None
 
 
@@ -117,9 +121,7 @@ class QLearningAgent(ReinforcementAgent):
         current = self.getQValue(state = state, action = action)
         next_state_max = self.getValue(nextState)
         update_value = current + 0.1 * (reward + self.discount * next_state_max - current)
-        print update_value
         self.setQValue(state, action, update_value)
-        # print "Calling update: reward: %i, alpha: %f, nsm: %i, curr: %i" % (reward, self.alpha, next_state_max, current)
 
 
     def getPolicy(self, state):
