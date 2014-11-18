@@ -510,7 +510,7 @@ class QLearningTest(testClasses.TestCase):
         return self.prettyPrint(values, '{0:10.4f}')
 
     def prettyPolicy(self, policy):
-        return self.prettyPrint(policy, '{0:10s}')
+        return self.prettyPrint(policy, '{0:10}')
 
     def prettyValueSolutionString(self, name, pretty):
         return '%s: """\n%s\n"""\n\n' % (name, pretty.rstrip())
