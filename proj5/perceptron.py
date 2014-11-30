@@ -79,7 +79,10 @@ class PerceptronClassifier:
         """
         featuresWeights = []
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        counter = self.weights[label]
+        keys = counter.sortedKeys()
+
+        while len(featuresWeights) != 100:
+            featuresWeights.append(keys.pop())
 
         return featuresWeights
