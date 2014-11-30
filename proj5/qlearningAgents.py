@@ -114,7 +114,7 @@ class QLearningAgent(ReinforcementAgent):
         """
         current = self.getQValue(state = state, action = action)
         next_state_max = self.getValue(nextState)
-        update_value = current + 0.1 * (reward + self.discount * next_state_max - current)
+        update_value = current + self.discount * (reward + self.discount * next_state_max - current)
         self.setQValue(state, action, update_value)
 
     def getPolicy(self, state):
@@ -177,15 +177,19 @@ class ApproximateQAgent(PacmanQAgent):
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.featExtractor.getFeatures(state, action) * self.getWeights()
 
     def update(self, state, action, nextState, reward):
         """
            Should update your weights based on transition
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        current = self.getQValue(state = state, action = action)
+        next_state_max = self.getValue(nextState)
+        diff = reward + self.discount * next_state_max - current
+        w_i = self.getWeights()[(state, action)]
+        feat = self.featExtractor.getFeatures(state, action)
+        w_new = w_i + self.alpha * diff * feat[(state, action)]
+        self.getWeights()[(state, action)] = w_new
 
     def final(self, state):
         "Called at the end of each game."
@@ -195,5 +199,4 @@ class ApproximateQAgent(PacmanQAgent):
         # did we finish training?
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
-            "*** YOUR CODE HERE ***"
-            pass
+            print self.getWeights()
