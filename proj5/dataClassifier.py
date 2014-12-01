@@ -75,12 +75,58 @@ def enhancedFeatureExtractorDigit(datum):
     ##
     """
     features =  basicFeatureExtractorDigit(datum)
-
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    ROWS = "rows"
+    TOP_HEAVY = "top"
+    BOTTOM_HEAVY = "bottom"
+    LEFT_HEAVY = "left"
+    RIGHT_HEAVY = "right"
+    features[TOP_HEAVY], features[BOTTOM_HEAVY] = top_bottom(datum)
+    features[LEFT_HEAVY], features[RIGHT_HEAVY] = left_right(datum)
+    features[ROWS] = similar_color_rows(datum)
 
     return features
 
+
+def similar_color_rows(datum):
+    num_rows = 0.0
+    for y in xrange(DIGIT_DATUM_HEIGHT):
+        color = (False, None)
+        for x in xrange(DIGIT_DATUM_WIDTH):
+            if datum.getPixel(x, y):
+                if color[0] and color[1] < x - 1:
+                    num_rows += 1.0
+                    break
+                else:
+                    color = (True, x)
+    return int(num_rows > DIGIT_DATUM_HEIGHT/2.0)
+
+def top_bottom(datum):
+    num_top_black = 0.0
+    num_bottom_black = 0.0
+
+    for x in xrange(DIGIT_DATUM_WIDTH):
+        for y in xrange(DIGIT_DATUM_HEIGHT):
+            if datum.getPixel(x,y) > 0:
+                if y <= DIGIT_DATUM_HEIGHT/2.0:
+                    num_top_black += 1
+                else:
+                    num_bottom_black += 1
+
+    return int(1.5 * num_bottom_black <= num_top_black), int(1.5 * num_top_black <= num_bottom_black)
+
+def left_right(datum):
+    num_left = 0.0
+    num_right = 0.0
+
+    for x in xrange(DIGIT_DATUM_WIDTH):
+        for y in xrange(DIGIT_DATUM_HEIGHT):
+            if datum.getPixel(x,y) > 0:
+                if x <= DIGIT_DATUM_WIDTH/2.0:
+                    num_left += 1
+                else:
+                    num_right += 1
+
+    return int(4.0/3*num_right <= num_left), int(4.0/3*num_left <= num_right)
 
 
 def basicFeatureExtractorPacman(state):
