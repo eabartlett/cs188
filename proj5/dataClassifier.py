@@ -104,7 +104,7 @@ def number_width(datum):
             if datum.getPixel(x,y) > 0 and x > max_x:
                 max_x = x
 
-    return int((max_x - min_x) > DIGIT_DATUM_WIDTH/2.0)
+    return int((max_x - min_x) > DIGIT_DATUM_WIDTH/4.0)
 
 def similar_color_rows(datum):
     num_rows = 0.0
@@ -117,7 +117,7 @@ def similar_color_rows(datum):
                     break
                 else:
                     color = (True, x)
-    return int(num_rows > DIGIT_DATUM_HEIGHT/2.0)
+    return int(num_rows > DIGIT_DATUM_HEIGHT/4.0)
 
 def top_bottom(datum):
     num_top_black = 0.0
@@ -162,9 +162,9 @@ def quadrant_counts(datum):
                         quads[2] += 1
                     else:
                         quads[3] += 1
-    max_index = quads.index(max(quads))
-    quads = [0,0,0,0]
-    quads[max_index] = 1
+    # max_index = quads.index(max(quads))
+    # quads = [0,0,0,0]
+    # quads[max_index] = 1
     return tuple(quads)
 
 
