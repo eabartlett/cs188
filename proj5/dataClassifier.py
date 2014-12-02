@@ -90,6 +90,7 @@ def enhancedFeatureExtractorDigit(datum):
     """
     features =  basicFeatureExtractorDigit(datum)
     ROWS = "rows"
+    ROWS2 = "rows2"
     TOP_HEAVY = "top"
     BOTTOM_HEAVY = "bottom"
     TOP_HEAVY2 = "top2"
@@ -110,6 +111,7 @@ def enhancedFeatureExtractorDigit(datum):
     features[TOP_HEAVY2], features[BOTTOM_HEAVY2] = top_bottom(datum)
     features[LEFT_HEAVY2], features[RIGHT_HEAVY2] = left_right(datum)
     features[ROWS] = similar_color_rows(datum)
+    features[ROWS2] = similar_color_rows(datum)
     features[QUAD0], features[QUAD1], features[QUAD2], features[QUAD3] = quadrant_counts(datum)
     features[NUMBER_WIDTH] = number_width(datum)
     features[NUMBER_WHITE] = number_white(datum)
