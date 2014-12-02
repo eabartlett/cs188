@@ -128,6 +128,24 @@ def left_right(datum):
 
     return int(4.0/3*num_right <= num_left), int(4.0/3*num_left <= num_right)
 
+def quadrant_counts(datum):
+    quads = [0,0,0,0]
+    for y in xrange(DIGIT_DATUM_HEIGHT):
+        for x in xrange(DIGIT_DATUM_WIDTH):
+            if datum.getPixel(x, y) > 0:
+                if x < DIGIT_DATUM_WIDTH/2:
+                    if y < DIGIT_DATUM_HEIGHT/2:
+                        quads[0] += 1
+                    else:
+                        quads[1] += 1
+                else:
+                    if y < DIGIT_DATUM_HEIGHT/2:
+                        quads[2] += 1
+                    else:
+                        quads[3] += 1
+    return tuple(quads)
+
+
 
 def basicFeatureExtractorPacman(state):
     """
