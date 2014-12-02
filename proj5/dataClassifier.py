@@ -72,6 +72,20 @@ def enhancedFeatureExtractorDigit(datum):
 
     ## DESCRIBE YOUR ENHANCED FEATURES HERE...
 
+        number_width : calculates width of the number using the pixel the furthest to the left/right over the whole image
+
+        number_white :
+
+        number_black :
+
+        similar_color_rows :
+
+        top_bottom :
+
+        left_right :
+
+        quadrant_counts :
+
     ##
     """
     features =  basicFeatureExtractorDigit(datum)
@@ -85,11 +99,15 @@ def enhancedFeatureExtractorDigit(datum):
     QUAD2 = "quad2"
     QUAD3 = "quad3"
     NUMBER_WIDTH = "width"
+    NUMBER_WHITE = "white"
+    NUMBER_BLACK = "black"
     features[TOP_HEAVY], features[BOTTOM_HEAVY] = top_bottom(datum)
     features[LEFT_HEAVY], features[RIGHT_HEAVY] = left_right(datum)
     features[ROWS] = similar_color_rows(datum)
     features[QUAD0], features[QUAD1], features[QUAD2], features[QUAD3] = quadrant_counts(datum)
     features[NUMBER_WIDTH] = number_width(datum)
+    features[NUMBER_WHITE] = number_white(datum)
+    features[NUMBER_BLACK] = number_black(datum)
 
     return features
 
@@ -105,6 +123,26 @@ def number_width(datum):
                 max_x = x
 
     return int((max_x - min_x) > DIGIT_DATUM_WIDTH/4.0)
+
+def number_white(datum):
+    count = 0.0
+
+    for x in xrange(DIGIT_DATUM_WIDTH):
+        for y in xrange(DIGIT_DATUM_HEIGHT):
+            if datum.getPixel(x,y) == 0:
+                count += 1
+
+    return count
+
+def number_black(datum):
+    count = 0.0
+
+    for x in xrange(DIGIT_DATUM_WIDTH):
+        for y in xrange(DIGIT_DATUM_HEIGHT):
+            if datum.getPixel(x,y) > 0:
+                count += 1
+
+    return count
 
 def similar_color_rows(datum):
     num_rows = 0.0
