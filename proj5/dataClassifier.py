@@ -86,6 +86,18 @@ def enhancedFeatureExtractorDigit(datum):
 
     return features
 
+def number_width(datum):
+    min_x = 28.0
+    max_x = 0.0
+
+    for x in xrange(DIGIT_DATUM_WIDTH):
+        for y in xrange(DIGIT_DATUM_HEIGHT):
+            if datum.getPixel(x,y) > 0 and x < min_x:
+                min_x = x
+            if datum.getPixel(x,y) > 0 and x > max_x:
+                max_x = x
+
+    return (max_x - min_x)
 
 def similar_color_rows(datum):
     num_rows = 0.0
