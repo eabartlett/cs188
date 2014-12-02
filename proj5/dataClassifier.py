@@ -104,7 +104,7 @@ def enhancedFeatureExtractorDigit(datum):
     features[TOP_HEAVY], features[BOTTOM_HEAVY] = top_bottom(datum)
     features[LEFT_HEAVY], features[RIGHT_HEAVY] = left_right(datum)
     features[ROWS] = similar_color_rows(datum)
-    features[QUAD0], features[QUAD1], features[QUAD2], features[QUAD3] = quadrant_counts(datum)
+    # features[QUAD0], features[QUAD1], features[QUAD2], features[QUAD3] = quadrant_counts(datum)
     features[NUMBER_WIDTH] = number_width(datum)
     features[NUMBER_WHITE] = number_white(datum)
     features[NUMBER_BLACK] = number_black(datum)
@@ -200,9 +200,9 @@ def quadrant_counts(datum):
                         quads[2] += 1
                     else:
                         quads[3] += 1
-    # max_index = quads.index(max(quads))
-    # quads = [0,0,0,0]
-    # quads[max_index] = 1
+    max_index = quads.index(max(quads))
+    quads = [0,0,0,0]
+    quads[max_index] = 1
     return tuple(quads)
 
 
