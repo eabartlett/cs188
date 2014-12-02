@@ -106,6 +106,26 @@ def number_width(datum):
 
     return int((max_x - min_x) > DIGIT_DATUM_WIDTH/2.0)
 
+def number_white(datum):
+    count = 0.0
+
+    for x in xrange(DIGIT_DATUM_WIDTH):
+        for y in xrange(DIGIT_DATUM_HEIGHT):
+            if datum.getPixel(x,y) == 0:
+                count += 1
+
+    return count
+
+def number_black(datum):
+    count = 0.0
+
+    for x in xrange(DIGIT_DATUM_WIDTH):
+        for y in xrange(DIGIT_DATUM_HEIGHT):
+            if datum.getPixel(x,y) > 0:
+                count += 1
+
+    return count
+
 def similar_color_rows(datum):
     num_rows = 0.0
     for y in xrange(DIGIT_DATUM_HEIGHT):
