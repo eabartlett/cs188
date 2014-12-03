@@ -91,61 +91,34 @@ def enhancedFeatureExtractorDigit(datum):
     features =  basicFeatureExtractorDigit(datum)
     ROWS = "rows"
     ROWS2 = "rows2"
-    ROWS3 = "rows3"
-    ROWS4 = "rows4"
     TOP_HEAVY = "top"
     BOTTOM_HEAVY = "bottom"
     TOP_HEAVY2 = "top2"
     BOTTOM_HEAVY2 = "bottom2"
-    TOP_HEAVY3 = "top3"
-    BOTTOM_HEAVY3 = "bottom3"
-    TOP_HEAVY4 = "top4"
-    BOTTOM_HEAVY4 = "bottom4"
     LEFT_HEAVY = "left"
     RIGHT_HEAVY = "right"
     LEFT_HEAVY2 = "left2"
     RIGHT_HEAVY2 = "right2"
-    LEFT_HEAVY3 = "left3"
-    RIGHT_HEAVY3 = "right3"
-    LEFT_HEAVY4 = "left4"
-    RIGHT_HEAVY4 = "right4"
-    QUAD0 = "quad0"
-    QUAD1 = "quad1"
-    QUAD2 = "quad2"
-    QUAD3 = "quad3"
     NUMBER_WIDTH = "width"
     NUMBER_WIDTH2 = "width2"
-    NUMBER_WIDTH3 = "width3"
-    NUMBER_WIDTH4 = "width4"
     NUMBER_WHITE = "white"
     NUMBER_WHITE2 = "white2"
     NUMBER_BLACK = "black"
     NUMBER_BLACK2 = "black2"
     NUMBER_BLACK3 = "black3"
-    NUMBER_BLACK4 = "black4"
     features[TOP_HEAVY], features[BOTTOM_HEAVY] = top_bottom(datum)
     features[LEFT_HEAVY], features[RIGHT_HEAVY] = left_right(datum)
     features[TOP_HEAVY2], features[BOTTOM_HEAVY2] = top_bottom(datum)
     features[LEFT_HEAVY2], features[RIGHT_HEAVY2] = left_right(datum)
-    # features[TOP_HEAVY3], features[BOTTOM_HEAVY3] = top_bottom(datum)
-    # features[LEFT_HEAVY3], features[RIGHT_HEAVY3] = left_right(datum)
-    # features[TOP_HEAVY4], features[BOTTOM_HEAVY4] = top_bottom(datum)
-    # features[LEFT_HEAVY4], features[RIGHT_HEAVY4] = left_right(datum)
     features[ROWS] = similar_color_rows(datum)
     features[ROWS2] = similar_color_rows(datum)
-    features[ROWS3] = similar_color_rows(datum)
-    # features[ROWS4] = similar_color_rows(datum)
-    # features[QUAD0], features[QUAD1], features[QUAD2], features[QUAD3] = quadrant_counts(datum)
     features[NUMBER_WIDTH] = number_width(datum)
     features[NUMBER_WIDTH2] = number_width(datum)
-    # features[NUMBER_WIDTH3] = number_width(datum)
-    # features[NUMBER_WIDTH4] = number_width(datum)
     features[NUMBER_WHITE] = number_white(datum)
     features[NUMBER_WHITE2] = number_white(datum)
     features[NUMBER_BLACK] = number_black(datum)
     features[NUMBER_BLACK2] = number_black(datum)
     features[NUMBER_BLACK3] = number_black(datum)
-    # features[NUMBER_BLACK4] = number_black(datum)
 
     return features
 
@@ -195,7 +168,7 @@ def similar_color_rows(datum):
                     break
                 else:
                     color = (True, x)
-    return int(num_rows > DIGIT_DATUM_HEIGHT/4.0)
+    return int(num_rows > DIGIT_DATUM_HEIGHT/4.5)
 
 def top_bottom(datum):
     num_top_black = 0.0
@@ -224,28 +197,6 @@ def left_right(datum):
                     num_right += 1
 
     return int(4.0/3*num_right <= num_left), int(4.0/3*num_left <= num_right)
-
-def quadrant_counts(datum):
-    quads = [0,0,0,0]
-    for y in xrange(DIGIT_DATUM_HEIGHT):
-        for x in xrange(DIGIT_DATUM_WIDTH):
-            if datum.getPixel(x, y) > 0:
-                if x < DIGIT_DATUM_WIDTH/2:
-                    if y < DIGIT_DATUM_HEIGHT/2:
-                        quads[0] += 1
-                    else:
-                        quads[1] += 1
-                else:
-                    if y < DIGIT_DATUM_HEIGHT/2:
-                        quads[2] += 1
-                    else:
-                        quads[3] += 1
-    max_index = quads.index(max(quads))
-    quads = [0,0,0,0]
-    quads[max_index] = 1
-    return tuple(quads)
-
-
 
 def basicFeatureExtractorPacman(state):
     """
