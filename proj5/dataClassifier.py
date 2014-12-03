@@ -276,11 +276,41 @@ def enhancedPacmanFeatures(state, action):
     For each state, this function is called with each legal action.
     It should return a counter with { <feature name> : <feature value>, ... }
     """
+    next_state = state.generateSuccessor(0, action)
     features = util.Counter()
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    FOOD_COUNT = "food_count"
+    CLOSEST_GHOST = "ghost"
+    CLOSEST_FOOD = "closest_food"
+    IS_WIN = "win"
+    IS_LOSE = "lose"
+    CAPSULES = "caps"
+    SCARED_GHOSTS = "scurred"
+    num_ghosts = len(next_state.getGhostPositions()) if next_state.getGhostPositions() else 1
+    num_food = next_state.getNumFood()
+
+
+    features[FOOD_COUNT] = -1/num_food if num_food else 0
+    features[IS_LOSE] = -int(next_state.isLose())
+    features[IS_WIN] = int(next_state.isWin())
+    features[CAPSULES] = -len(next_state.getCapsules()) if next_state.getCapsules() else 0
+    features[SCARED_GHOSTS] = -len([s for s in next_state.getGhostStates() if s.scaredTimer > 0])
+    features[CLOSEST_FOOD] = 1.0/(closest_food(next_state)+1)
+    features[CLOSEST_GHOST] = (1.0/closest_ghost(next_state))**num_ghosts
     return features
 
+def closest_food(state):
+    food = state.getFood().asList()
+    dists = [util.manhattanDistance(f, state.getPacmanPosition()) for f in food]
+    if dists:
+        return min(dists)
+    return 0
+
+def closest_ghost(state):
+    ghosts = state.getGhostPositions()
+    dists = [util.manhattanDistance(state.getPacmanPosition(), p) for p in ghosts]
+    if dists:
+        return min(dists) if min(dists) else -float("inf")
+    return 1
 
 def contestFeatureExtractorDigit(datum):
     """
