@@ -91,6 +91,7 @@ def enhancedFeatureExtractorDigit(datum):
     features =  basicFeatureExtractorDigit(datum)
     ROWS = "rows"
     ROWS2 = "rows2"
+    ROWS3 = "rows3"
     TOP_HEAVY = "top"
     BOTTOM_HEAVY = "bottom"
     TOP_HEAVY2 = "top2"
@@ -104,18 +105,27 @@ def enhancedFeatureExtractorDigit(datum):
     QUAD2 = "quad2"
     QUAD3 = "quad3"
     NUMBER_WIDTH = "width"
+    NUMBER_WIDTH2 = "width2"
     NUMBER_WHITE = "white"
     NUMBER_BLACK = "black"
+    NUMBER_WHITE2 = "white2"
+    NUMBER_BLACK2 = "black2"
+    NUMBER_BLACK3 = "black3"
     features[TOP_HEAVY], features[BOTTOM_HEAVY] = top_bottom(datum)
     features[LEFT_HEAVY], features[RIGHT_HEAVY] = left_right(datum)
     features[TOP_HEAVY2], features[BOTTOM_HEAVY2] = top_bottom(datum)
     features[LEFT_HEAVY2], features[RIGHT_HEAVY2] = left_right(datum)
     features[ROWS] = similar_color_rows(datum)
-    # features[QUAD0], features[QUAD1], features[QUAD2], features[QUAD3] = quadrant_counts(datum)
     features[ROWS2] = similar_color_rows(datum)
+    features[ROWS3] = similar_color_rows(datum)
+    # features[NUMBER_WHITE] = number_white(datum)
+    # features[NUMBER_BLACK] = number_black(datum)
+    # features[NUMBER_WHITE2] = number_white(datum)
+    # features[NUMBER_BLACK2] = number_black(datum)
+    # features[NUMBER_BLACK3] = number_black(datum)
+    # features[QUAD0], features[QUAD1], features[QUAD2], features[QUAD3] = quadrant_counts(datum)
     features[NUMBER_WIDTH] = number_width(datum)
-    features[NUMBER_WHITE] = number_white(datum)
-    features[NUMBER_BLACK] = number_black(datum)
+    features[NUMBER_WIDTH2] = number_width(datum)
 
     return features
 
@@ -130,7 +140,7 @@ def number_width(datum):
             if datum.getPixel(x,y) > 0 and x > max_x:
                 max_x = x
 
-    return int((max_x - min_x) > DIGIT_DATUM_WIDTH/4.0)
+    return int((max_x - min_x) > DIGIT_DATUM_WIDTH/8.0)
 
 def number_white(datum):
     count = 0.0
@@ -141,7 +151,7 @@ def number_white(datum):
             if datum.getPixel(x,y) == 0:
                 count += 1
 
-    return int(count > (total_pixels/2))
+    return int(count > (total_pixels/1.2))
 
 def number_black(datum):
     count = 0.0
@@ -152,7 +162,7 @@ def number_black(datum):
             if datum.getPixel(x,y) > 0:
                 count += 1
 
-    return int(count > (total_pixels/8))
+    return int(count > (total_pixels/9.0))
 
 def similar_color_rows(datum):
     num_rows = 0.0
@@ -160,12 +170,12 @@ def similar_color_rows(datum):
         color = (False, None)
         for x in xrange(DIGIT_DATUM_WIDTH):
             if datum.getPixel(x, y):
-                if color[0] and color[1] < x - 1:
+                if color[0] and color[1] < x - (DIGIT_DATUM_WIDTH/6):
                     num_rows += 1.0
                     break
                 else:
                     color = (True, x)
-    return int(num_rows > DIGIT_DATUM_HEIGHT/4.0)
+    return int(num_rows > DIGIT_DATUM_HEIGHT/5)
 
 def top_bottom(datum):
     num_top_black = 0.0
