@@ -74,18 +74,16 @@ def enhancedFeatureExtractorDigit(datum):
 
         number_width : calculates width of the number using the pixel the furthest to the left/right over the whole image
 
-        number_white :
+        number_white : calculates number of white pixels in image - if over half of image is white
 
-        number_black :
+        number_black : calculates if at least 1/8th of pixels are black/grey
 
-        similar_color_rows :
+        similar_color_rows : calculates if at least 1/4.5th of rows have black/grey pixels separated by >= 1 pixel
 
-        top_bottom :
+        top_bottom : (1,0) if significantly more black/grey on top, (0,1) for opposite, (0,0) for approxamitely the same
 
-        left_right :
-
-        quadrant_counts :
-
+        left_right : Same as top_bottom except for left/right - returns in order (left_bit, right_bit)
+        
     ##
     """
     features =  basicFeatureExtractorDigit(datum)
